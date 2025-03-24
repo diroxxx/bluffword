@@ -1,4 +1,4 @@
-import {ChangeEvent, useState} from "react";
+import { ChangeEvent, useState } from "react";
 import axios from "axios";
 
 type GameRoomResponse = {
@@ -7,8 +7,8 @@ type GameRoomResponse = {
     gameMode: string;
     roundsTotal: number;
 };
-function HomePage() {
 
+function HomePage() {
     const [code, setCode] = useState<string>("");
 
     const createRoom = async () => {
@@ -24,7 +24,6 @@ function HomePage() {
                 }
             );
             alert(`Kod pokoju: ${res.data.code}`);
-            // TODO: Przejdź do lobby pokoju
         } catch (e) {
             console.error(e);
             alert("Błąd przy tworzeniu pokoju.");
@@ -41,24 +40,39 @@ function HomePage() {
     };
 
     return (
-        <div style={{ padding: "2rem", textAlign: "center" }}>
-            <h1>🎮 BluffWord</h1>
+        <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
+            <div className="flex flex-col items-center w-full max-w-sm">
+                <h1 className="text-4xl font-bold text-white mb-10 flex items-center gap-2">
+                    <span role="img" aria-label="controller">🎮</span> BluffWord
+                </h1>
 
-            <div style={{ marginTop: "2rem" }}>
-                <button onClick={createRoom}>Stwórz nowy pokój</button>
-            </div>
+                <button
+                    onClick={createRoom}
+                    className="w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition"
+                >
+                    Create new room
+                </button>
 
-            <div style={{ marginTop: "2rem" }}>
-                <input
-                    type="text"
-                    placeholder="Wpisz kod pokoju"
-                    value={code}
-                    onChange={handleCodeChange}
-                />
-                <button onClick={joinRoom}>Dołącz</button>
+                <div className="mt-6 flex w-full gap-2">
+                    <input
+                        type="text"
+                        placeholder="Enter room code"
+                        value={code}
+                        onChange={handleCodeChange}
+                        className="flex-1 border border-gray-700 rounded px-4 py-2 text-sm bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                        onClick={joinRoom}
+                        className="bg-green-600 text-white font-semibold px-4 py-2 rounded-xl hover:bg-green-700 transition"
+                    >
+                        Join
+                    </button>
+                </div>
             </div>
         </div>
     );
 
+
 }
+
 export default HomePage;
