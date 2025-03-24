@@ -20,8 +20,9 @@ public class Round {
     private int roundNumber;
     private String category;
 
-    @OneToMany(mappedBy = "round")
-    private List<WordPair> wordPairs = new ArrayList<>();
+    @ManyToOne()
+    @JoinColumn(name = "word_pair_id")
+    private WordPair wordPairs;
 
     @ManyToOne
     @JoinColumn(name = "game_room_id")
