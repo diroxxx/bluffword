@@ -40,7 +40,7 @@ function HomePage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
+        <div className="min-h-screen flex items-center justify-center  px-4 bg-blue-950">
             <div className="flex flex-col items-center w-full max-w-sm">
                 <h1 className="text-4xl font-bold text-white mb-10 flex items-center gap-2">
                     <span role="img" aria-label="controller">🎮</span> BluffWord
@@ -48,7 +48,7 @@ function HomePage() {
 
                 <button
                     onClick={createRoom}
-                    className="w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition"
+                    className="w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition cursor-pointer"
                 >
                     Create new room
                 </button>
@@ -63,7 +63,7 @@ function HomePage() {
                     />
                     <button
                         onClick={joinRoom}
-                        className="bg-green-600 text-white font-semibold px-4 py-2 rounded-xl hover:bg-green-700 transition"
+                        className="bg-green-600 text-white font-semibold px-4 py-2 rounded-xl hover:bg-green-700 transition cursor-pointer"
                     >
                         Join
                     </button>
