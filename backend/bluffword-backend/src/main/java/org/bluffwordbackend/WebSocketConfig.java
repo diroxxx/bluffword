@@ -12,20 +12,16 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").withSockJS();
-//        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
-
-    }
-
-    @Override
-    public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
-        WebSocketMessageBrokerConfigurer.super.configureWebSocketTransport(registry);
-    }
-
-    @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.setApplicationDestinationPrefixes("/app");
         registry.enableSimpleBroker("/topic");
+        registry.setApplicationDestinationPrefixes("/app");
+    }
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins("http://localhost:5174")
+                .withSockJS();
+
     }
 }
