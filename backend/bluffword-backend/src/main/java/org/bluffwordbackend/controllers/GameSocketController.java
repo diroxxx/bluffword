@@ -12,36 +12,33 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/gameRoom")
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "http://localhost:5173")
 public class GameSocketController {
 
    private final InMemoryGameRoomService gameRoomService;
     private final SimpMessagingTemplate messagingTemplate;
 
-//    @MessageMapping("/clue")
-//    @SendTo("/topic/clues")
-//    public ClueMessage sendClue(ClueMessage clue) {
-//        return clue;
-//    }
-//    @MessageMapping("/broadcast")
-//    @SendTo("/topic/reply")
-//    public String broadcastMessage(@Payload String message) {
-//        return "You have received a message: " + message;
-//    }
+
+    @MessageMapping("/chat")
+    @SendTo("/topic/mes")
+    public String chat(@Payload PlayerInfoDto playerInfoDto) {
+        return playerInfoDto + " asdfsdfsdfasdf";
+    }
 
     @PostMapping("/create")
     public ResponseEntity<Map<String, String>> createRoom(@RequestBody PlayerInfoDto request) {
         String code = gameRoomService.generateCode();
         GameRoomState room = new GameRoomState(code, GameMode.STATIC_IMPOSTOR); // lub z parametrem
+
 
         room.getPlayers().add(request);
         gameRoomService.saveRoom(code, room); // Dodaj tę metodę!
@@ -68,8 +65,13 @@ public class GameSocketController {
             return ResponseEntity.badRequest().build();
         }
 
-        room.getPlayers().add(request);
-//        System.out.println(room.getPlayers());
+        boolean alreadyJoined = room.getPlayers().stream()
+                .anyMatch(p -> p.getNickname().equalsIgnoreCase(request.getNickname()));
+
+        if (!alreadyJoined) {
+            room.getPlayers().add(request);
+        }
+
 
         messagingTemplate.convertAndSend(
                 "/topic/room/" + code + "/players",

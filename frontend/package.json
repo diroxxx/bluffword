@@ -17,10 +17,8 @@
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.0",
     "react-stomp": "^5.1.0",
-    "sockjs-client": "^1.6.1",
-    "react-stomp-hooks": "^2.1.0"
-
-
+    "react-stomp-hooks": "^2.1.0",
+    "sockjs-client": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
