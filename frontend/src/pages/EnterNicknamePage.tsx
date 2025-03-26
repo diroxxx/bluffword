@@ -17,6 +17,7 @@ function EnterNicknamePage() {
             alert("Please enter a nickname");
             return;
         }
+
         try {
             let roomCode = existingCode;
 
@@ -29,13 +30,21 @@ function EnterNicknamePage() {
                 );
                 roomCode = res.data.code;
                 console.log(roomCode);
+            } else if (mode === "JOIN") {
+                await axios.post(
+                    `http://localhost:8080/api/gameRoom/${roomCode}/join`,
+                    { nickname: nickname.trim() }
+                );
             }
-
             localStorage.setItem("nickname", nickname.trim());
-            navigate(`/room/${roomCode}`);
-        } catch (err) {
+            navigate(`/room/${roomCode}?mode=${mode}`);
+        }  catch (err: any) {
+            if (err.response?.status === 409) {
+                alert("This nickname is already taken in this room.");
+            } else {
+                alert("Something went wrong.");
+            }
             console.error(err);
-            alert("Something went wrong");
         }
     };
 

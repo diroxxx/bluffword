@@ -47,7 +47,7 @@ function HomePage() {
                         <button
                             onClick={( () => {
                                 if (!code) return alert("Enter room code first!");
-                                navigate(`/enter-name?code=${code}`);
+                                navigate(`/enter-name?mode=JOIN&code=${code}`);
                             } )}
                             className="bg-green-600 text-white font-semibold px-4 py-2 rounded-xl hover:bg-green-700 transition cursor-pointer"
                         >
