@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useStompClient, useSubscription } from "react-stomp-hooks";
-import PlayerList from "./playerGameRoomComponents/PlayerList.tsx";
-import RoomCode from "./playerGameRoomComponents/RoomCode.tsx";
-import GameRoomSettings from "./hostGameRoomComponents/GameRoomSettings.tsx";
+import { usePlayer } from "../context/PlayerContext";
+import PlayerList from "../components/PlayerList";
+import RoomCode from "../components/RoomCode";
+import GameRoomSettings from "../components/GameRoomSettings";
+
 type PlayerInfo = {
     nickname: string;
     isImpostor: boolean;
     isHost: boolean;
 };
+
 type GameRoomSettings = {
-    mode : string;
+    mode: string;
     numberOfRounds: number;
     numbersOfPlayers: number;
 };
@@ -20,84 +23,39 @@ function RoomLobby() {
     const [players, setPlayers] = useState<PlayerInfo[]>([]);
     const [connected, setConnected] = useState(false);
     const [searchParams] = useSearchParams();
-    const isHost = localStorage.getItem("isHost") === "true";
-
-
     const stompClient = useStompClient();
+    const { player } = usePlayer();
 
-    //Subskrypcja WebSocket — reaguj na zmiany listy graczy
     useSubscription(`/topic/room/${code}/players`, (message) => {
-        console.log("🔔 WS received!", message.body); // <== DODAJ TO
-
         const data = JSON.parse(message.body) as PlayerInfo[];
         setPlayers(data);
-
     });
 
     useEffect(() => {
-        if (!stompClient || !code ) return;
-
-        console.log("📡 Sending sync request to server...");
-        stompClient.publish({
-            destination: `/app/room/${code}/sync`,
-            body: ""
-        });
-
-        setConnected(true);
-    }, [stompClient, code, searchParams]);
-
-    useEffect(() => {
-        const nickname = localStorage.getItem("nickname");
-
-        const handleBeforeUnload = () => {
-            if (!code || !nickname) return;
-            navigator.sendBeacon(
-                `http://localhost:8080/api/gameRoom/${code}/leave`,
-                new Blob([JSON.stringify({ nickname })], { type: "application/json" })
-            );
-            const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type;
-
-            if (navType !== "reload") {
-                localStorage.removeItem("nickname");
-                localStorage.removeItem("isHost");
-            }
-
-            // if (performance.navigation.type !== 1) {
-            //     localStorage.removeItem("nickname");
-            //     localStorage.removeItem("isHost");
-            // }
-
-        };
-
-        window.addEventListener("beforeunload", handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-        };
-    }, [code]);
-
+        if (stompClient && code) {
+            setConnected(true);
+        }
+    }, [stompClient, code]);
 
     return (
         <div className="min-h-screen bg-gray-900 text-white flex justify-center px-4 py-6">
             <div className="w-full max-w-6xl">
-                {/* Top: Room Code */}
                 <div className="text-center mb-8">
                     <RoomCode connected={connected} code={code} />
                 </div>
 
                 <div className="flex flex-col lg:flex-row justify-center items-start gap-10">
                     <div className="w-full lg:w-1/2 flex justify-center">
-                        <PlayerList players={players}/>
+                        <PlayerList players={players} />
                     </div>
-
                     <div className="w-full lg:w-1/2 flex justify-center">
-                        {isHost && <GameRoomSettings />}
+                        {/*{player?.isHost && <GameRoomSettings />}*/}
+                        <GameRoomSettings />
                     </div>
                 </div>
             </div>
         </div>
     );
-
 }
 
 export default RoomLobby;

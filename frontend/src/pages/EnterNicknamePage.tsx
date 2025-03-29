@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { usePlayer } from "../context/PlayerContext";
 
 function EnterNicknamePage() {
     const [nickname, setNickname] = useState("");
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { setPlayer } = usePlayer();
 
     const mode = searchParams.get("mode");
     const existingCode = searchParams.get("code");
-    console.log("mode =", mode);
-    console.log("code =", existingCode);
 
     const handleSubmit = async () => {
         if (!nickname.trim()) {
@@ -27,28 +27,30 @@ function EnterNicknamePage() {
                     {
                         nickname: nickname.trim(),
                         isImpostor: null,
-                        isHost: true
+                        isHost: true,
                     }
                 );
                 roomCode = res.data.code;
-                localStorage.setItem("isHost", "true");
-
+                setPlayer({
+                    nickname: nickname.trim(),
+                    isHost: true,
+                    isImpostor: false,
+                });
             } else if (mode === "JOIN") {
-                await axios.post(
-                    `http://localhost:8080/api/gameRoom/${roomCode}/join`,
-                    {
-                        nickname: nickname.trim(),
-                        isImpostor: null,
-                        isHost: false
-
-                    }
-                );
-                localStorage.setItem("isHost", "false");
-
+                await axios.post(`http://localhost:8080/api/gameRoom/${roomCode}/join`, {
+                    nickname: nickname.trim(),
+                    isImpostor: null,
+                    isHost: false,
+                });
+                setPlayer({
+                    nickname: nickname.trim(),
+                    isHost: false,
+                    isImpostor: false,
+                });
             }
-            localStorage.setItem("nickname", nickname.trim());
+
             navigate(`/room/${roomCode}?mode=${mode}`);
-        }  catch (err: any) {
+        } catch (err: any) {
             if (err.response?.status === 409) {
                 alert("This nickname is already taken in this room.");
             } else {

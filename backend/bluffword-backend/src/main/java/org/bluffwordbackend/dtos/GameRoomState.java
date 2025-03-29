@@ -20,6 +20,6 @@ public class GameRoomState {
     public GameRoomState(String code) {
         this.code = code;
         this.players = new ArrayList<>();
-        this.isStarted = true;
+        this.isStarted = false;
     }
 }

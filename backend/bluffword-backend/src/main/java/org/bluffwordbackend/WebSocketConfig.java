@@ -26,24 +26,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
 //                .setAllowedOrigins("http://localhost:5174")
+                .addInterceptors(new WebSocketInterceptor())
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
 
     }
-
-//    @Override
-//    public void configureClientInboundChannel(ChannelRegistration registration) {
-//        registration.interceptors(new ChannelInterceptor() {
-//            @Override
-//            public Message<?> preSend(Message<?> message, MessageChannel channel) {
-//                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-//                if (accessor != null) {
-//                    accessor.setLeaveMutable(true);
-//                }
-//                return message;
-//            }
-//        });
-//    }
-
 
 }
