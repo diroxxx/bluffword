@@ -7,4 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class PlayerInfoDto {
     private String nickname;
+    private Boolean isImpostor;
+    private Boolean isHost;
 }

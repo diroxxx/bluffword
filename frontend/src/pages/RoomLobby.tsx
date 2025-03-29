@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useStompClient, useSubscription } from "react-stomp-hooks";
-
+import PlayerList from "./playerGameRoomComponents/PlayerList.tsx";
+import RoomCode from "./playerGameRoomComponents/RoomCode.tsx";
+import GameRoomSettings from "./hostGameRoomComponents/GameRoomSettings.tsx";
 type PlayerInfo = {
     nickname: string;
+    isImpostor: boolean;
+    isHost: boolean;
+};
+type GameRoomSettings = {
+    mode : string;
+    numberOfRounds: number;
+    numbersOfPlayers: number;
 };
 
 function RoomLobby() {
@@ -11,10 +20,12 @@ function RoomLobby() {
     const [players, setPlayers] = useState<PlayerInfo[]>([]);
     const [connected, setConnected] = useState(false);
     const [searchParams] = useSearchParams();
+    const isHost = localStorage.getItem("isHost") === "true";
+
 
     const stompClient = useStompClient();
 
-    // 🔔 Subskrypcja WebSocket — reaguj na zmiany listy graczy
+    //Subskrypcja WebSocket — reaguj na zmiany listy graczy
     useSubscription(`/topic/room/${code}/players`, (message) => {
         console.log("🔔 WS received!", message.body); // <== DODAJ TO
 
@@ -24,7 +35,6 @@ function RoomLobby() {
     });
 
     useEffect(() => {
-        // const mode = searchParams.get("mode");
         if (!stompClient || !code ) return;
 
         console.log("📡 Sending sync request to server...");
@@ -45,6 +55,18 @@ function RoomLobby() {
                 `http://localhost:8080/api/gameRoom/${code}/leave`,
                 new Blob([JSON.stringify({ nickname })], { type: "application/json" })
             );
+            const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type;
+
+            if (navType !== "reload") {
+                localStorage.removeItem("nickname");
+                localStorage.removeItem("isHost");
+            }
+
+            // if (performance.navigation.type !== 1) {
+            //     localStorage.removeItem("nickname");
+            //     localStorage.removeItem("isHost");
+            // }
+
         };
 
         window.addEventListener("beforeunload", handleBeforeUnload);
@@ -55,26 +77,27 @@ function RoomLobby() {
     }, [code]);
 
 
-
     return (
-        <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center px-4">
-            <h1 className="text-3xl font-bold mb-4">Room Code: {code}</h1>
-            <h2 className="text-xl mb-6">
-                {connected ? "🟢 Connected. Waiting for players..." : "🕓 Connecting..."}
-            </h2>
+        <div className="min-h-screen bg-gray-900 text-white flex justify-center px-4 py-6">
+            <div className="w-full max-w-6xl">
+                {/* Top: Room Code */}
+                <div className="text-center mb-8">
+                    <RoomCode connected={connected} code={code} />
+                </div>
 
-            <div className="bg-gray-800 p-4 rounded-lg shadow w-full max-w-sm">
-                <h3 className="text-lg font-semibold mb-2">Players in lobby:</h3>
-                <ul className="list-disc pl-5 space-y-1">
-                    {players.length === 0 ? (
-                        <li>No players yet</li>
-                    ) : (
-                        players.map((p, i) => <li key={i}>{p.nickname}</li>)
-                    )}
-                </ul>
+                <div className="flex flex-col lg:flex-row justify-center items-start gap-10">
+                    <div className="w-full lg:w-1/2 flex justify-center">
+                        <PlayerList players={players}/>
+                    </div>
+
+                    <div className="w-full lg:w-1/2 flex justify-center">
+                        {isHost && <GameRoomSettings />}
+                    </div>
+                </div>
             </div>
         </div>
     );
+
 }
 
 export default RoomLobby;

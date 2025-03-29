@@ -26,15 +26,25 @@ function EnterNicknamePage() {
                     "http://localhost:8080/api/gameRoom/create",
                     {
                         nickname: nickname.trim(),
+                        isImpostor: null,
+                        isHost: true
                     }
                 );
                 roomCode = res.data.code;
-                console.log(roomCode);
+                localStorage.setItem("isHost", "true");
+
             } else if (mode === "JOIN") {
                 await axios.post(
                     `http://localhost:8080/api/gameRoom/${roomCode}/join`,
-                    { nickname: nickname.trim() }
+                    {
+                        nickname: nickname.trim(),
+                        isImpostor: null,
+                        isHost: false
+
+                    }
                 );
+                localStorage.setItem("isHost", "false");
+
             }
             localStorage.setItem("nickname", nickname.trim());
             navigate(`/room/${roomCode}?mode=${mode}`);

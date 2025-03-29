@@ -39,7 +39,7 @@ public class GameSocketController {
     public void syncRoomState(@DestinationVariable String code) {
         GameRoomState room = gameRoomService.getRoom(code);
         if (room == null) {
-            System.out.println("❌ Room not found for code: " + code);
+            System.out.println("Room not found for code: " + code);
             return;
         }
         System.out.println(room.getPlayers());
@@ -53,10 +53,10 @@ public class GameSocketController {
     @PostMapping("/create")
     public ResponseEntity<Map<String, String>> createRoom(@RequestBody PlayerInfoDto request) {
         String code = gameRoomService.generateCode();
-        GameRoomState room = new GameRoomState(code, GameMode.STATIC_IMPOSTOR); // lub z parametrem
+        GameRoomState room = new GameRoomState(code);
 
         room.getPlayers().add(request);
-        gameRoomService.saveRoom(code, room); // Dodaj tę metodę!
+        gameRoomService.saveRoom(code, room);
 
         messagingTemplate.convertAndSend(
                 "/topic/room/" + code + "/players",
@@ -76,7 +76,7 @@ public class GameSocketController {
         System.out.println(request.getNickname());
 
         GameRoomState room = gameRoomService.getRoom(code);
-        if (room == null || room.isStarted()) {
+        if (room == null || !room.getIsStarted()) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -111,7 +111,7 @@ public class GameSocketController {
                 p.getNickname().equalsIgnoreCase(request.getNickname())
         );
 
-        System.out.println("❌ Gracz opuścił pokój: " + request.getNickname());
+        System.out.println("Gracz opuścił pokój: " + request.getNickname());
 
         messagingTemplate.convertAndSend(
                 "/topic/room/" + code + "/players",

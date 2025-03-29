@@ -18,10 +18,8 @@ function HomePage() {
                 style={{backgroundImage: "url('/BluffWord_Logo.gif')"}} // wrzuć do public/
             />
 
-            {/* Warstwa przyciemnienia / blur */}
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[-1]"/>
 
-            {/* Twoja oryginalna treść */}
             <div className="min-h-screen flex items-center justify-center px-4">
                 <div className="flex flex-col items-center w-full max-w-sm">
                     <h1 className="text-4xl font-bold text-white mb-10 flex items-center gap-2">

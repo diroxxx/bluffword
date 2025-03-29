@@ -14,11 +14,12 @@ public class GameRoomState {
     private String code;
     private GameMode mode;
     private List<PlayerInfoDto> players = new ArrayList<>();
-    private boolean started = false;
-    public GameRoomState(String code, GameMode mode) {
+    private Boolean isStarted;
+    private Integer numberOfRounds;
+    private Integer numberOfPlayers;
+    public GameRoomState(String code) {
         this.code = code;
-        this.mode = mode;
         this.players = new ArrayList<>();
-        this.started = false;
+        this.isStarted = true;
     }
 }
