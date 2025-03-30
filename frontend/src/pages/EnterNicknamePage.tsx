@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayer } from "../PlayerContext";
 
 function EnterNicknamePage() {
     const [nickname, setNickname] = useState("");
@@ -33,8 +33,8 @@ function EnterNicknamePage() {
                 roomCode = res.data.code;
                 setPlayer({
                     nickname: nickname.trim(),
-                    isHost: true,
                     isImpostor: false,
+                    isHost: true,
                 });
             } else if (mode === "JOIN") {
                 await axios.post(`http://localhost:8080/api/gameRoom/${roomCode}/join`, {

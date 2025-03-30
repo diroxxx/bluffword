@@ -1,6 +1,4 @@
-// src/context/PlayerContext.tsx
-import React, { createContext, useContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export type PlayerInfo = {
     nickname: string;
@@ -11,42 +9,41 @@ export type PlayerInfo = {
 type PlayerContextType = {
     player: PlayerInfo | null;
     setPlayer: (player: PlayerInfo) => void;
+    loading: boolean;
 };
 
-const PlayerContext = createContext<PlayerContextType>({
-    player: null,
-    setPlayer: () => {},
-});
+const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
-    const [player, setPlayerState] = useState<PlayerInfo | null>(null);
+    const [player, _setPlayer] = useState<PlayerInfo | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    // Ustawienie danych w state + cookies
-    const setPlayer = (player: PlayerInfo) => {
-        setPlayerState(player);
-        Cookies.set("nickname", player.nickname);
-        Cookies.set("isHost", String(player.isHost));
-    };
-
-    // 🔁 Przywracanie danych po odświeżeniu
+    // ⏳ Wczytaj dane z sessionStorage przy starcie
     useEffect(() => {
-        const nickname = Cookies.get("nickname");
-        const isHost = Cookies.get("isHost") === "true";
-
-        if (nickname) {
-            setPlayerState({
-                nickname,
-                isHost,
-                isImpostor: false, // lub z cookies jeśli chcesz trzymać też impostora
-            });
+        const stored = sessionStorage.getItem("player");
+        if (stored) {
+            _setPlayer(JSON.parse(stored));
         }
+        setLoading(false);
     }, []);
 
+    const setPlayer = (newPlayer: PlayerInfo) => {
+        _setPlayer(newPlayer);
+        sessionStorage.setItem("player", JSON.stringify(newPlayer));
+    };
+
     return (
-        <PlayerContext.Provider value={{ player, setPlayer }}>
+        <PlayerContext.Provider value={{ player, setPlayer, loading }}>
             {children}
         </PlayerContext.Provider>
     );
 };
 
-export const usePlayer = () => useContext(PlayerContext);
+// 🧠 Użycie w komponentach
+export const usePlayer = () => {
+    const context = useContext(PlayerContext);
+    if (!context) {
+        throw new Error("usePlayer must be used within a PlayerProvider");
+    }
+    return context;
+};
