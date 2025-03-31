@@ -52,26 +52,31 @@ function RoomLobby() {
         }
     }, [stompClient, code]);
 
-    const isHost = player?.isHost ?? JSON.parse(localStorage.getItem("player") || "{}")?.isHost;
     return (
-        <div className="min-h-screen bg-gray-900 text-white flex justify-center px-4 py-6">
-            <div className="w-full max-w-6xl">
-                <div className="text-center mb-8">
-                    <RoomCode connected={connected} code={code} />
-                </div>
+        <div className="min-h-screen bg-gray-900 text-white px-4 py-6 flex flex-col items-center">
+            {/* Room Code */}
+            <div className="text-center mb-8">
+                <RoomCode connected={connected} code={code}/>
+            </div>
 
-                <div className="flex flex-col lg:flex-row justify-center items-start gap-10">
-                    <div className="w-full lg:w-1/2 flex justify-center">
-                        <PlayerList players={players} />
+            {/* Ustawienia i lista graczy obok siebie */}
+            <div className="flex flex-row justify-center items-start gap-12 max-w-4xl w-full">
+                {/* Game Settings (left) */}
+                {player?.isHost && (
+                    <div className="flex-shrink-0 w-80">
+                        <GameRoomSettings/>
                     </div>
-                    <div className="w-full lg:w-1/2 flex justify-center">
-                        {(player?.isHost ?? JSON.parse(localStorage.getItem("player") || "{}")?.isHost) && <GameRoomSettings />}
+                )}
 
 
-                    </div>
+                {/* Player List (centered) */}
+                <div className="flex-grow flex justify-center">
+                    <PlayerList players={players}/>
                 </div>
             </div>
         </div>
+
+
     );
 }
 
