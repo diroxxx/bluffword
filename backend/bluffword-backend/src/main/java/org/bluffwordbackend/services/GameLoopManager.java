@@ -22,10 +22,7 @@ public class GameLoopManager {
     }
 
     private void startRound(String code, int roundNumber) {
-//        messagingTemplate.convertAndSend(
-//                "/topic/room/" + code + "/game",
-//                "Round " + roundNumber + " has started!"
-//        );
+
         messagingTemplate.convertAndSend("/topic/room/" + code + "/game", "GAME_STARTED");
 
 
