@@ -40,6 +40,8 @@ public class GameSocketController {
     @PostMapping("/{code}/start")
     public ResponseEntity<Void> startGame(@PathVariable String code) {
         gameLoopManager.startGame(code);
+        GameRoomState room = gameRoomService.getRoom(code);
+
         return ResponseEntity.ok().build();
     }
 
