@@ -19,17 +19,17 @@ public class WebSocketDisconnectListener implements ApplicationListener<SessionD
         String sessionId = event.getSessionId();
         System.out.println("Gracz rozłączył się: " + sessionId);
 
-        for (GameRoomState room : gameRoomService.getAllRooms()) {
-            boolean removed = room.getPlayers().removeIf(p -> sessionId.equals(p.getSessionId()));
-
-            if (removed) {
-                System.out.println("Usunięto gracza z pokoju " + room.getCode());
-
-                messagingTemplate.convertAndSend(
-                        "/topic/room/" + room.getCode() + "/players",
-                        room.getPlayers()
-                );
-            }
-        }
+//        for (GameRoomState room : gameRoomService.getAllRooms()) {
+//            boolean removed = room.getPlayers().removeIf(p -> sessionId.equals(p.getSessionId()));
+//
+//            if (removed) {
+//                System.out.println("Usunięto gracza z pokoju " + room.getCode());
+//
+//                messagingTemplate.convertAndSend(
+//                        "/topic/room/" + room.getCode() + "/players",
+//                        room.getPlayers()
+//                );
+//            }
+//        }
     }
 }

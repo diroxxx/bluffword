@@ -17,6 +17,7 @@ public class GameRoomState {
     private Boolean isStarted;
     private Integer numberOfRounds;
     private Integer numberOfPlayers;
+    private RoundState roundState;
     public GameRoomState(String code) {
         this.code = code;
         this.players = new ArrayList<>();
