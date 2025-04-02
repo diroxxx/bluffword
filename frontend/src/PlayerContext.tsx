@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 export type PlayerInfo = {
     nickname: string;
@@ -9,6 +9,8 @@ export type PlayerInfo = {
 type PlayerContextType = {
     player: PlayerInfo | null;
     setPlayer: (player: PlayerInfo) => void;
+    players: PlayerInfo[];
+    setPlayers: (players: PlayerInfo[]) => void;
     loading: boolean;
 };
 
@@ -16,13 +18,18 @@ const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
     const [player, _setPlayer] = useState<PlayerInfo | null>(null);
+    const [players, setPlayers] = useState<PlayerInfo[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // ⏳ Wczytaj dane z sessionStorage przy starcie
     useEffect(() => {
         const stored = sessionStorage.getItem("player");
         if (stored) {
-            _setPlayer(JSON.parse(stored));
+            try {
+                const parsed = JSON.parse(stored);
+                _setPlayer(parsed);
+            } catch (e) {
+                console.error("Error parsing player from sessionStorage", e);
+            }
         }
         setLoading(false);
     }, []);
@@ -33,13 +40,14 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <PlayerContext.Provider value={{ player, setPlayer, loading }}>
-            {children}
+        <PlayerContext.Provider
+            value={{ player, setPlayer, players, setPlayers, loading }}
+        >
+            {!loading && children}
         </PlayerContext.Provider>
     );
 };
 
-// 🧠 Użycie w komponentach
 export const usePlayer = () => {
     const context = useContext(PlayerContext);
     if (!context) {
