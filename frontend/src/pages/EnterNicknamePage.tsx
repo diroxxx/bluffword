@@ -5,44 +5,21 @@ import { usePlayer } from "../PlayerContext";
 import { useStompClient, useSubscription } from "react-stomp-hooks";
 
 
+export type PlayerInfo = {
+    nickname: string;
+    isImpostor: boolean;
+    isHost: boolean;
+};
+
 function EnterNicknamePage() {
     const [nickname, setNickname] = useState("");
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { setPlayer } = usePlayer();
+    // const { setPlayer } = usePlayer();
     const stompClient = useStompClient();
     const mode = searchParams.get("mode");
     const existingCode = searchParams.get("code");
 
-
-    // useSubscription("/user/queue/room/created", (message) => {
-    //     const data = JSON.parse(message.body);
-    //     const code = data.code;
-    //
-    //     setPlayer({
-    //         nickname: nickname.trim(),
-    //         isHost: true,
-    //         isImpostor: false,
-    //     });
-    //     navigate(`/room/${code}`);
-    // });
-
-
-    // useSubscription("/user/queue/room/joined", (message) => {
-    //     const data = JSON.parse(message.body);
-    //     const code = data.code;
-    //     const players = data.players;
-    //
-    //     setPlayer({
-    //         nickname: nickname.trim(),
-    //         isHost: false,
-    //         isImpostor: false,
-    //     });
-    //
-    //     setPlayers(players); // 🔥 teraz dostępne globalnie
-    //
-    //     navigate(`/room/${code}`);
-    // });
 
 
     const handleSubmit = async () => {
@@ -57,7 +34,11 @@ function EnterNicknamePage() {
 
         try {
             let roomCode = existingCode;
-
+            const currentPlayer: PlayerInfo = {
+                nickname: "",
+                isHost: false,
+                isImpostor: false
+            };
             if (mode === "CREATE") {
                 const res = await axios.post<{ code: string }>(
                     "http://localhost:8080/api/gameRoom/create",
@@ -68,21 +49,14 @@ function EnterNicknamePage() {
                     }
                 );
                 roomCode = res.data.code;
-                setPlayer({
-                    nickname: nickname.trim(),
-                    isImpostor: false,
-                    isHost: true,
-                });
-
-                // stompClient.publish({
-                //     destination: "/app/room/create",
-                //     body: JSON.stringify({
-                //         nickname: nickname.trim(),
-                //         isImpostor: false, // lub null, zależnie jak w backendzie
-                //     }),
+                currentPlayer.nickname = nickname
+                currentPlayer.isHost = true;
+                currentPlayer.isImpostor = false;
+                // setPlayer({
+                //     nickname: nickname.trim(),
+                //     isImpostor: false,
+                //     isHost: true,
                 // });
-                //
-
 
             } else if (mode === "JOIN") {
                 await axios.post(`http://localhost:8080/api/gameRoom/${roomCode}/join`, {
@@ -90,24 +64,17 @@ function EnterNicknamePage() {
                     isImpostor: null,
                     isHost: false,
                 });
-                setPlayer({
-                    nickname: nickname.trim(),
-                    isHost: false,
-                    isImpostor: false,
-                });
-
-                // stompClient.publish({
-                //     destination: `/app/room/${existingCode}/join`,
-                //     body: JSON.stringify({
-                //         nickname: nickname.trim(),
-                //         isImpostor: false,
-                //         isHost: false,
-                //     }),
+                // setPlayer({
+                //     nickname: nickname.trim(),
+                //     isHost: false,
+                //     isImpostor: false,
                 // });
 
-                // navigate(`/room/${roomCode}`);
+                currentPlayer.nickname = nickname
+                currentPlayer.isHost = false;
+                currentPlayer.isImpostor = false;
             }
-
+            sessionStorage.setItem("currentPlayer", JSON.stringify(currentPlayer));
             navigate(`/room/${roomCode}?mode=${mode}`);
         } catch (err: any) {
             if (err.response?.status === 409) {

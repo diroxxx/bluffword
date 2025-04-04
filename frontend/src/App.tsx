@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage";
 import EnterNicknamePage from "./pages/EnterNicknamePage";
 import RoomLobby from "./pages/RoomLobby";
 import GameRoundPage from "./pages/GameRoundPage.tsx";
+
 function App() {
     return (
     <StompSessionProvider url="ws://localhost:8080/ws/websocket">

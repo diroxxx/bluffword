@@ -1,26 +1,42 @@
-import React, {useEffect, useState} from "react";
+import {useAtom} from "jotai";
+import {gameReqAtom, listOfPlayers} from "../../Atom.tsx";
+import {useAtomValue} from "jotai/index";
+function GameRoomSettings( ) {
 
-type GameRoomSetting = {
-    mode: string;
-    numberOfRounds: number;
-    maxNumbersOfPlayers: number;
-};
-type GameRoomSettingsProps = {
-    setGameMode: React.Dispatch<React.SetStateAction<GameRoomSetting>>;
-};
+     const [gameReq, setGameReq] = useAtom(gameReqAtom);
+    const players = useAtomValue(listOfPlayers);
 
- function GameRoomSettings({ setGameMode }: GameRoomSettingsProps) {
-     const [rounds, setRounds] = useState(6);
-     const [maxPlayers, setMaxPlayers] = useState(6);
-     const [mode, setMode] = useState("STATIC_IMPOSTOR");
 
-     useEffect(() => {
-         setGameMode({
-             mode,
-             numberOfRounds: rounds,
-             maxNumbersOfPlayers: maxPlayers,
-         });
-     }, [rounds, maxPlayers, mode]);
+    const updateNumberOfRounds = (newRounds: number) => {
+        setGameReq((prev) => ({
+            ...prev,
+            numberOfRounds: newRounds,
+        }));
+    };
+    const updateMaxPlayers = (numbersOfPlayers: number) => {
+        setGameReq((prev) => ({
+            ...prev,
+            maxNumbersOfPlayers: numbersOfPlayers,
+        }));
+    };
+    const updateMode = (mode: string) => {
+        setGameReq((prev) => ({
+            ...prev,
+            mode: mode
+        }));
+    };
+    const updateTimeToVote = (timeForVote: number) => {
+        setGameReq((prev) => ({
+            ...prev,
+            timeForVoting: timeForVote,
+        }));
+    };
+    const updateTimeForRound = (timeForRound: number) => {
+        setGameReq((prev) => ({
+            ...prev,
+            timeForRound: timeForRound
+        }));
+    };
 
      return (
          <div className="bg-gray-800 p-4 rounded-lg shadow w-full">
@@ -30,45 +46,74 @@ type GameRoomSettingsProps = {
              <div className="mb-4">
                  <label className="block mb-1">Game Mode:</label>
                  <select
-                     value={mode}
-                     onChange={(e) => setMode(e.target.value)}
+                     value={gameReq.mode}
+                     onChange={(e) => updateMode(e.target.value)}
                      className="w-full p-2 bg-gray-700 rounded"
                  >
-                     <option value="STATIC_IMPOSTOR">Static Impostor</option>
-                     <option value="ROTATING_IMPOSTOR">Rotating Impostor</option>
-                     <option value="DOUBLE_AGENT">Double Agent</option>
+                     <option value="STATIC_IMPOSTOR" >Static Impostor</option>
+                     <option value="ROTATING_IMPOSTOR" disabled={true}>Rotating Impostor</option>
+                     <option value="DOUBLE_AGENT" disabled={true}>Double Agent</option>
                  </select>
              </div>
 
              {/* Rounds slider */}
              <div className="mb-4">
-                 <label className="block mb-1">Rounds: {rounds}</label>
+                 <label className="block mb-1">Rounds: {gameReq.numberOfRounds}</label>
                  <input
                      type="range"
                      min={4}
                      max={20}
-                     value={rounds}
-                     onChange={(e) => setRounds(parseInt(e.target.value))}
+                     value={gameReq.numberOfRounds}
+                     onChange={(e) => updateNumberOfRounds(parseInt(e.target.value))}
                      className="w-full"
                  />
              </div>
 
              {/* Max players slider */}
              <div>
-                 <label className="block mb-1">Max Players: {maxPlayers}</label>
+                 <label className="block mb-1">Max Players: {gameReq.maxNumbersOfPlayers}</label>
                  <input
                      type="range"
-                     min={3}
+                     min={Math.max(players.length, 3)}
                      max={12}
-                     value={maxPlayers}
-                     onChange={(e) => setMaxPlayers(parseInt(e.target.value))}
-                     className="w-full"
+                     value={gameReq.maxNumbersOfPlayers}
+                     onChange={(e) => updateMaxPlayers(parseInt(e.target.value))}
+                     className="w-full accent-green-500"
+                 />
+             </div>
+
+
+             {/* Time for Voting */}
+             <div>
+                 <label className="block mb-1 font-medium">Voting Time: {gameReq.timeForVoting} sec</label>
+                 <input
+                     type="range"
+                     min={30}
+                     max={120}
+                     // step={5}
+                     value={gameReq.timeForVoting}
+                     onChange={(e) => updateTimeToVote(Number(e.target.value))}
+                     className="w-full accent-red-500"
+                 />
+             </div>
+
+             {/* Time for Round */}
+             <div>
+                 <label className="block mb-1 font-medium">Round Time: {gameReq.timeForRound} sec</label>
+                 <input
+                     type="range"
+                     min={10}
+                     max={180}
+                     step={5}
+                     value={gameReq.timeForRound}
+                     onChange={(e) =>
+                         updateTimeForRound(Number(e.target.value))}
+                     className="w-full accent-yellow-500"
                  />
              </div>
 
          </div>
      );
-
  }
 
 export default GameRoomSettings;
