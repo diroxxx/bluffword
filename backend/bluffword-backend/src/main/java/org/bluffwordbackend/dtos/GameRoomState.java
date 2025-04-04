@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.bluffwordbackend.models.GameMode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class GameRoomState {
@@ -17,7 +19,7 @@ public class GameRoomState {
     private Boolean isStarted;
     private Integer numberOfRounds;
     private Integer numberOfPlayers;
-    private RoundState roundState;
+    private Map<Integer,RoundState> roundStateMap = new HashMap<>();
     public GameRoomState(String code) {
         this.code = code;
         this.players = new ArrayList<>();

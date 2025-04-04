@@ -19,12 +19,13 @@ public class InMemoryGameRoomService {
         rooms.put(code, state);
     }
 
-    public GameRoomState removePlayerBySession(String sessionId) {
-        for (GameRoomState room : rooms.values()) {
-            boolean removed = room.getPlayers().removeIf(p -> sessionId.equals(p.getSessionId()));
-            if (removed) return room;
+    public boolean removePlayerFromRoom(String code, String nickname) {
+        GameRoomState room = rooms.get(code);
+        if (room != null) {
+
+            return room.getPlayers().removeIf(player -> player.getNickname().equalsIgnoreCase(nickname));
         }
-        return null;
+        return false;
     }
 
     public GameRoomState getRoom(String code) {
