@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import {Client, useStompClient} from "react-stomp-hooks";
 
 export type GameRequest = {
     mode: string;
@@ -24,9 +25,5 @@ export const listOfPlayers = atom<PlayerInfo[]>([])
 
 export const roomCode = atom<string | null>(null)
 
-// export const playerAtom = atomWithStorage<PlayerInfo | null>(
-//     "currentPlayer",
-//     null,
-//     sessionStorage
-// );
-
+export const connectedToWebSocket = atom<boolean>(false)
+export const stompClientState = atom<Client| null>(null);

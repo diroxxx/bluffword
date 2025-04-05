@@ -7,6 +7,7 @@ function PlayerList({code}: {code?: string}) {
     const storedPlayer: PlayerInfo | null = storedPlayerRaw ? JSON.parse(storedPlayerRaw) : null;
     const getListOfPlayers = useAtomValue(listOfPlayers);
 
+
     async function  removePlayer(nickname: string)   {
         try{
           const res =  await axios.delete(`http://localhost:8080/api/gameRoom/${code}/players/${nickname}`);
@@ -22,7 +23,6 @@ function PlayerList({code}: {code?: string}) {
         }
     }
      
-   
 
     return (
 

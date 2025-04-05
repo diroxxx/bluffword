@@ -1,13 +1,12 @@
 import {use, useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import { useStompClient, useSubscription } from "react-stomp-hooks";
-import { usePlayer } from "../PlayerContext";
 import PlayerList from "../pages/playerGameRoomComponents/PlayerList"
 import RoomCode from "../pages/playerGameRoomComponents/RoomCode";
 import GameRoomSettings from "../pages/hostGameRoomComponents/GameRoomSettings";
 import axios from "axios";
 import {useAtom, useAtomValue} from "jotai";
-import {gameReqAtom, roomCode, listOfPlayers, PlayerInfo, playerAtom} from "../Atom.tsx";
+import {gameReqAtom, roomCode, listOfPlayers, PlayerInfo, playerAtom, connectedToWebSocket, stompClientState} from "../Atom.tsx";
 import {useSetAtom} from "jotai";
 
 
@@ -18,27 +17,42 @@ function RoomLobby() {
     const navigate = useNavigate();
     const stompClient = useStompClient();
     const[players, setPlayers] = useAtom(listOfPlayers);
+
     const storedPlayer = sessionStorage.getItem("currentPlayer");
     const player = storedPlayer ? JSON.parse(storedPlayer) : null;
+
     const gameReq = useAtomValue(gameReqAtom);
+    const setConnectedToWebSocket = useSetAtom(connectedToWebSocket);
+    // const [stompState, setStompState] = useAtom(stompClientState);
+
+
 
     useEffect(() => {
-        if (!stompClient || !code || !connected) return;
+        const storedPlayerRaw = sessionStorage.getItem("currentPlayer");
+        const storedPlayer: PlayerInfo | null = storedPlayerRaw ? JSON.parse(storedPlayerRaw) : null;
 
-        const timeout = setTimeout(() => {
+        if (!storedPlayer || !stompClient || !connected) return;
+
+        stompClient.publish({
+            destination: `/app/room/${code}/players`,
+            body: JSON.stringify({
+                nickname: storedPlayer.nickname,
+                isImpostor: false,
+                isHost: storedPlayer.isHost,
+            })
+        });
+
+        const syncTimeout = setTimeout(() => {
             stompClient.publish({
                 destination: `/app/room/${code}/sync`,
                 body: ""
             });
-            console.log("📡 Sent sync request after connection");
+            console.log("📡 Sent sync request after reconnect");
         }, 300);
 
-        return () => clearTimeout(timeout);
-    }, [stompClient, code, connected]);
+        return () => clearTimeout(syncTimeout);
 
-
-
-
+    }, [stompClient, connected]);
 
 
     useSubscription(`/topic/room/${code}/game`, (message) => {
@@ -48,6 +62,21 @@ function RoomLobby() {
             navigate(`/room/${code}/round`);
         }
     });
+
+    useSubscription(`/topic/room/${code}/kick/${player.nickname}`, (message) => {
+        const body = message.body;
+        alert("You have been removed from the room!");
+
+        setTimeout(() => {
+            if (stompClient && stompClient.connected) {
+                stompClient.deactivate();
+            }
+
+            setConnectedToWebSocket(false);
+            navigate("/");
+        }, 1000);
+
+    })
 
     useSubscription(`/topic/room/${code}/players`, (message) => {
         const data = JSON.parse(message.body) as PlayerInfo[];

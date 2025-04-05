@@ -3,6 +3,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { usePlayer } from "../PlayerContext";
 import { useStompClient, useSubscription } from "react-stomp-hooks";
+import { Client } from "@stomp/stompjs";
+import {useSetAtom} from "jotai/index";
+import {connectedToWebSocket, stompClientState} from "../Atom.tsx";
+import {useAtom} from "jotai";
 
 
 export type PlayerInfo = {
@@ -16,9 +20,13 @@ function EnterNicknamePage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     // const { setPlayer } = usePlayer();
-    const stompClient = useStompClient();
     const mode = searchParams.get("mode");
     const existingCode = searchParams.get("code");
+    const stompClient = useStompClient();
+
+    const setConnectedToWebSocket = useSetAtom(connectedToWebSocket);
+    const [stompState, setStompState] = useAtom(stompClientState);
+
 
 
 
@@ -27,9 +35,34 @@ function EnterNicknamePage() {
             alert("Please enter a nickname");
             return;
         }
-        if (!stompClient) {
-            alert("Not connected to server.");
-            return;
+        let activeStompClient = stompClient;
+
+        if (!activeStompClient || !connectedToWebSocket) {
+            activeStompClient = new Client({
+                brokerURL: "ws://localhost:8080/ws/websocket",
+                onConnect: () => {
+                    console.log("Connected to websocket");
+                    setConnectedToWebSocket(true);
+                },
+                onDisconnect: () => {
+                    console.log("Disconnected from websocket");
+                    setConnectedToWebSocket(false);
+                },
+                onStompError: (frame) => {
+                    console.error("STOMP error", frame);
+                    setConnectedToWebSocket(false);
+                },
+            });
+
+            activeStompClient.activate();
+            setStompState(activeStompClient);
+
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            if (!activeStompClient.connected) {
+                alert("Unable to reconnect. Please try again later.");
+                return;
+            }
         }
 
         try {
@@ -49,26 +82,30 @@ function EnterNicknamePage() {
                     }
                 );
                 roomCode = res.data.code;
+                activeStompClient.publish({
+                    destination: `/app/room/${roomCode}/players`,
+                    body: JSON.stringify({
+                        nickname: nickname.trim(),
+                        isImpostor: false,
+                        isHost: true,
+                    })
+                });
+
+
                 currentPlayer.nickname = nickname
                 currentPlayer.isHost = true;
                 currentPlayer.isImpostor = false;
-                // setPlayer({
-                //     nickname: nickname.trim(),
-                //     isImpostor: false,
-                //     isHost: true,
-                // });
 
             } else if (mode === "JOIN") {
-                await axios.post(`http://localhost:8080/api/gameRoom/${roomCode}/join`, {
-                    nickname: nickname.trim(),
-                    isImpostor: null,
-                    isHost: false,
+
+                activeStompClient.publish({
+                    destination: `/app/room/${roomCode}/players`,
+                    body: JSON.stringify({
+                        nickname: nickname.trim(),
+                        isImpostor: false,
+                        isHost: false,
+                    })
                 });
-                // setPlayer({
-                //     nickname: nickname.trim(),
-                //     isHost: false,
-                //     isImpostor: false,
-                // });
 
                 currentPlayer.nickname = nickname
                 currentPlayer.isHost = false;
