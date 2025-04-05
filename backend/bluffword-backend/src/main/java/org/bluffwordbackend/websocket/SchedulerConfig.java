@@ -1,4 +1,4 @@
-package org.bluffwordbackend;
+package org.bluffwordbackend.websocket;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

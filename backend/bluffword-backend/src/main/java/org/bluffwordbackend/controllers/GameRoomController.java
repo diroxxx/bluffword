@@ -7,15 +7,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.bluffwordbackend.dtos.GameRoomState;
 import org.bluffwordbackend.dtos.PlayerInfoDto;
 import org.bluffwordbackend.services.InMemoryGameRoomService;
+import org.bluffwordbackend.websocket.WebSocketDisconnectListener;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -25,7 +29,8 @@ import java.util.Map;
 public class GameRoomController {
 
    private final InMemoryGameRoomService gameRoomMemory;
-    private final SimpMessagingTemplate messagingTemplate;
+   private final SimpMessagingTemplate messagingTemplate;
+   private final WebSocketDisconnectListener webSocketDisconnectListener;
 
 
     @PostMapping("/{code}/start")
@@ -35,6 +40,48 @@ public class GameRoomController {
 
         return ResponseEntity.ok().build();
     }
+
+//start of change
+
+    @PostMapping("/create")
+    public ResponseEntity<Map<String, String>> createRoom() {
+        String code = gameRoomMemory.generateCode();
+        GameRoomState room = new GameRoomState(code);
+        gameRoomMemory.saveRoom(code, room);
+        return ResponseEntity.ok(Map.of("code", code));
+    }
+
+
+    @MessageMapping("/room/{code}/players")
+    public void registerPlayer(@DestinationVariable String code,
+                               @Payload PlayerInfoDto player,
+                               StompHeaderAccessor accessor) {
+
+        String sessionId = accessor.getSessionId();
+        GameRoomState room = gameRoomMemory.getRoom(code);
+        if (room == null) return;
+
+        player.setSessionId(sessionId);
+
+        Optional<PlayerInfoDto> existingPlayer = room.getPlayers().stream()
+                .filter(p -> p.getNickname().equals(player.getNickname()))
+                .findFirst();
+
+        if (existingPlayer.isPresent()) {
+            existingPlayer.get().setSessionId(sessionId);
+        } else {
+            room.getPlayers().add(player);
+        }
+        webSocketDisconnectListener.cancelDisconnectTimer(player.getNickname());
+
+        messagingTemplate.convertAndSend(
+                "/topic/room/" + code + "/players",
+                room.getPlayers()
+        );
+    }
+
+
+//end of change
 
     @MessageMapping("/room/{code}/sync")
     public void syncRoomState(@DestinationVariable String code) {
@@ -48,53 +95,6 @@ public class GameRoomController {
                 "/topic/room/" + code + "/players",
                 room.getPlayers()
         );
-    }
-
-
-@PostMapping("/create")
-public ResponseEntity<Map<String, String>> createRoom( @RequestBody PlayerInfoDto request) {
-
-        String code = gameRoomMemory.generateCode();
-    log.info("Creating new room with code: {}", code);
-    GameRoomState room = new GameRoomState(code);
-
-    room.getPlayers().add(request);
-    gameRoomMemory.saveRoom(code, room);
-
-    messagingTemplate.convertAndSend(
-            "/topic/room/" + code + "/players",
-            room.getPlayers()
-    );
-
-    return ResponseEntity.ok(Map.of("code", code));
-}
-
-
-    @PostMapping("/{code}/join")
-    public ResponseEntity<Void> joinGameRoom(
-            @PathVariable String code,
-            @RequestBody PlayerInfoDto request) {
-        log.info("Received join request for code: {}", code);
-
-        GameRoomState room = gameRoomMemory.getRoom(code);
-        if (room == null || room.getIsStarted()) {
-            System.out.println("Room not found for code: " + code);
-            return ResponseEntity.badRequest().build();
-        }
-
-        boolean alreadyJoined = room.getPlayers().stream()
-                .anyMatch(p -> p.getNickname().equalsIgnoreCase(request.getNickname()));
-
-        if (alreadyJoined) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
-        room.getPlayers().add(request);
-        messagingTemplate.convertAndSend(
-                "/topic/room/" + code + "/players",
-                room.getPlayers()
-        );
-
-        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{code}/leave")
@@ -111,8 +111,6 @@ public ResponseEntity<Map<String, String>> createRoom( @RequestBody PlayerInfoDt
                 p.getNickname().equalsIgnoreCase(request.getNickname())
         );
 
-        System.out.println("Gracz opuścił pokój: " + request.getNickname());
-
         messagingTemplate.convertAndSend(
                 "/topic/room/" + code + "/players",
                 room.getPlayers()
@@ -125,7 +123,7 @@ public ResponseEntity<Map<String, String>> createRoom( @RequestBody PlayerInfoDt
     public ResponseEntity<Map<String,String>> deletePlayer(@PathVariable String code, @PathVariable String nickname) {
         GameRoomState room= gameRoomMemory.getRoom(code);
         if (room == null) {
-            log.info("Room not found for code: " + code);
+            log.info("Room not found for code: {}", code);
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "error",
                     "message", "Room not found"
@@ -138,12 +136,20 @@ public ResponseEntity<Map<String, String>> createRoom( @RequestBody PlayerInfoDt
                         "/topic/room/" + code + "/players",
                         room.getPlayers()
                 );
+                messagingTemplate.convertAndSend(
+                        "/topic/room/"+ code +"/kick/"+ nickname,
+                        room.getPlayers()
+                );
+
                 return ResponseEntity.ok(Map.of(
                         "status", "success",
                         "message", "Player removed"
                 ));
             }
             log.info("Player not found for code: " + code);
+
+
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                     "status", "error",
                     "message", "Player not found"

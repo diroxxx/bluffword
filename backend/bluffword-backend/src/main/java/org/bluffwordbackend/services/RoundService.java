@@ -23,23 +23,20 @@ public class RoundService {
         GameRoom room = gameRoomRepository.findById(gameRoomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        // 1. Wylosuj WordPair
         List<WordPair> allPairs = wordPairRepository.findAll();
         WordPair chosen = allPairs.get(new Random().nextInt(allPairs.size()));
 
-        // 2. Utwórz nową rundę
         Round round = new Round();
         round.setGameRoom(room);
         round.setWordPairs(chosen);
         round.setRoundNumber(roundNumber);
         round = roundRepository.save(round);
 
-        // 3. Przypisz role graczom
         List<GamePlay> players = gamePlayRepository.findByGameRoom(room);
         List<Player> playerList = players.stream().map(GamePlay::getPlayer).toList();
 
         Collections.shuffle(playerList);
-        Player impostor = playerList.get(0); // pierwszy = impostor
+        Player impostor = playerList.get(0);
 
         for (Player p : playerList) {
             RoleRound role = new RoleRound();
