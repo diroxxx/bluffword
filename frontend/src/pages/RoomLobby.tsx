@@ -6,8 +6,16 @@ import RoomCode from "../pages/playerGameRoomComponents/RoomCode";
 import GameRoomSettings from "../pages/hostGameRoomComponents/GameRoomSettings";
 import axios from "axios";
 import {useAtom, useAtomValue} from "jotai";
-import {gameReqAtom, roomCode, listOfPlayers, PlayerInfo, playerAtom, connectedToWebSocket, stompClientState} from "../Atom.tsx";
+import {gameReqAtom, listOfPlayers, PlayerInfo, connectedToWebSocket} from "../Atom.tsx";
 import {useSetAtom} from "jotai";
+
+// export type PlayerInfo = {
+//     nickname: string;
+//     isImpostor: boolean;
+//     isHost: boolean;
+// };
+
+
 
 
 function RoomLobby() {
@@ -23,9 +31,6 @@ function RoomLobby() {
 
     const gameReq = useAtomValue(gameReqAtom);
     const setConnectedToWebSocket = useSetAtom(connectedToWebSocket);
-    // const [stompState, setStompState] = useAtom(stompClientState);
-
-
 
     useEffect(() => {
         const storedPlayerRaw = sessionStorage.getItem("currentPlayer");
@@ -55,7 +60,7 @@ function RoomLobby() {
     }, [stompClient, connected]);
 
 
-    useSubscription(`/topic/room/${code}/game`, (message) => {
+    useSubscription(`/topic/room/${code}/start`, (message) => {
         const body = message.body;
 
         if (body === "GAME_STARTED") {
@@ -92,10 +97,13 @@ function RoomLobby() {
 
     const handleStartGame = async () => {
         try {
-            await axios.post(`http://localhost:8080/api/gameRoom/${code}/start`,{
-
+            await axios.post(`http://localhost:8080/api/round/${code}/start`,{
+                rounds: gameReq.numberOfRounds,
+                mode: gameReq.mode,
+                maxPlayers: gameReq.maxNumbersOfPlayers,
+                voteTime: gameReq.timeForVoting,
+                roundsTime: gameReq.timeForRound
             });
-            // alert("Game started!");
         } catch (err) {
             console.error("Failed to start game", err);
             alert("Error starting the game.");

@@ -1,10 +1,27 @@
-import {useAtom} from "jotai";
-import {gameReqAtom, listOfPlayers} from "../../Atom.tsx";
+import {atom, useAtom} from "jotai";
+import {gameReqAtom, listOfPlayers, modes,} from "../../Atom.tsx";
 import {useAtomValue} from "jotai/index";
+import {useEffect, useState} from "react";
+import axios from "axios";
 function GameRoomSettings( ) {
 
-     const [gameReq, setGameReq] = useAtom(gameReqAtom);
+    const [gameReq, setGameReq] = useAtom(gameReqAtom);
     const players = useAtomValue(listOfPlayers);
+    const [listModes, setListModes] = useAtom(modes);
+
+    useEffect(() => {
+        const fetchGameModes = async () => {
+            try {
+                const res = await axios("http://localhost:8080/api/gameRoom/GameModes");
+                const data = await res.data;
+                setListModes(data);
+            } catch (err) {
+                console.error("Błąd:", err);
+            }
+        };
+
+        fetchGameModes();
+    }, []);
 
 
     const updateNumberOfRounds = (newRounds: number) => {
@@ -50,9 +67,11 @@ function GameRoomSettings( ) {
                      onChange={(e) => updateMode(e.target.value)}
                      className="w-full p-2 bg-gray-700 rounded"
                  >
-                     <option value="STATIC_IMPOSTOR" >Static Impostor</option>
-                     <option value="ROTATING_IMPOSTOR" disabled={true}>Rotating Impostor</option>
-                     <option value="DOUBLE_AGENT" disabled={true}>Double Agent</option>
+                     {listModes.map((mode) => (
+                         <option key={mode} value={mode}>
+                             {mode}
+                         </option>
+                     ))}
                  </select>
              </div>
 
