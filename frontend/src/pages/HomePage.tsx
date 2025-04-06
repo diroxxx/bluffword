@@ -12,10 +12,9 @@ function HomePage() {
 
     return (
         <div className="relative min-h-screen overflow-hidden">
-            {/* GIF jako tło */}
             <div
                 className="absolute inset-0 bg-cover bg-center z-[-1]"
-                style={{backgroundImage: "url('/BluffWord_Logo.gif')"}} // wrzuć do public/
+                style={{backgroundImage: "url('/BluffWord_Logo.gif')"}}
             />
 
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[-1]"/>
@@ -23,12 +22,11 @@ function HomePage() {
             <div className="min-h-screen flex items-center justify-center px-4">
                 <div className="flex flex-col items-center w-full max-w-sm">
                     <h1 className="text-4xl font-bold text-white mb-10 flex items-center gap-2">
-                        <span role="img" aria-label="controller">🎮</span> BluffWord
                     </h1>
 
                     <button
                         onClick={() => navigate("/enter-name?mode=CREATE")}
-                        className="w-full bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition cursor-pointer"
+                        className="w-full bg-blue-800 text-white font-semibold px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition cursor-pointer"
                     >
                         Create new room
                     </button>
@@ -39,7 +37,7 @@ function HomePage() {
                             placeholder="Enter room code"
                             value={code}
                             onChange={handleCodeChange}
-                            className="flex-1 border border-gray-700 rounded px-4 py-2 text-sm bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 border border-gray-700 rounded px-4 py-2 text-sm bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-900"
                         />
 
                         <button
@@ -47,7 +45,7 @@ function HomePage() {
                                 if (!code) return alert("Enter room code first!");
                                 navigate(`/enter-name?mode=JOIN&code=${code}`);
                             } )}
-                            className="bg-green-600 text-white font-semibold px-4 py-2 rounded-xl hover:bg-green-700 transition cursor-pointer"
+                            className="bg-green-700 text-white font-semibold px-4 py-2 rounded-xl hover:bg-green-800 transition cursor-pointer"
                         >
                             Join
                         </button>
@@ -55,10 +53,7 @@ function HomePage() {
                 </div>
             </div>
         </div>
-
     );
-
-
 }
 
 export default HomePage;

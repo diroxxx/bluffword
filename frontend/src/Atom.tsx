@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import {Client, useStompClient} from "react-stomp-hooks";
+import {Client} from "react-stomp-hooks";
 
 export type GameRequest = {
     mode: string;
@@ -27,3 +27,5 @@ export const roomCode = atom<string | null>(null)
 
 export const connectedToWebSocket = atom<boolean>(false)
 export const stompClientState = atom<Client| null>(null);
+
+export const modes = atom<string[]>([]);
