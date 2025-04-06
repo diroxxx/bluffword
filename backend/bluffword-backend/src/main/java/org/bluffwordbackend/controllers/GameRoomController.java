@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bluffwordbackend.dtos.GameRoomState;
 import org.bluffwordbackend.dtos.PlayerInfoDto;
+import org.bluffwordbackend.models.GameMode;
 import org.bluffwordbackend.services.InMemoryGameRoomService;
 import org.bluffwordbackend.websocket.WebSocketDisconnectListener;
 import org.slf4j.Logger;
@@ -18,6 +19,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,16 +35,15 @@ public class GameRoomController {
    private final SimpMessagingTemplate messagingTemplate;
    private final WebSocketDisconnectListener webSocketDisconnectListener;
 
-
-    @PostMapping("/{code}/start")
-    public ResponseEntity<Void> startGame(@PathVariable String code) {
-        log.info("Starting game room {}", code);
-        GameRoomState room = gameRoomMemory.getRoom(code);
-
-        return ResponseEntity.ok().build();
-    }
-
 //start of change
+
+    @GetMapping("/GameModes")
+    public ResponseEntity<List<GameMode>> getGameModes() {
+        List<GameMode> gameModes = new ArrayList<>();
+        gameModes.add(GameMode.STATIC_IMPOSTOR);
+        gameModes.add(GameMode.ROUND_IMPOSTOR);
+        return ResponseEntity.ok(gameModes);
+    }
 
     @PostMapping("/create")
     public ResponseEntity<Map<String, String>> createRoom() {

@@ -18,7 +18,8 @@ public class GameRoomState {
     private List<PlayerInfoDto> players = new ArrayList<>();
     private Boolean isStarted;
     private Integer numberOfRounds;
-    private Integer numberOfPlayers;
+    private Integer voteTime;
+    private Integer roundTime;
     private Map<Integer,RoundState> roundStateMap = new HashMap<>();
     public GameRoomState(String code) {
         this.code = code;
