@@ -2,12 +2,18 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import {useAtomValue} from "jotai";
 import {gameReqAtom, listOfPlayers} from "../../Atom.tsx";
 import {useState} from "react";
+import CountUp from 'react-countup';
+
 
 function RoomCode({code}: {code?: string}) {
     const players = useAtomValue(listOfPlayers);
     const gameReq = useAtomValue(gameReqAtom);
     const [revealed, setRevealed] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    const isReady = players.length === gameReq.maxNumbersOfPlayers;
+    const animationSrc = isReady ? "/accepted_anim.lottie" : "/loading_anim.lottie";
+
 
     const handleReveal = () =>{
         if (revealed) {
@@ -54,37 +60,28 @@ function RoomCode({code}: {code?: string}) {
             <h2 className="text-xl flex flex-col items-center justify-center">
                 <div className="w-20 h-20">
                     <DotLottieReact
-                        src={"/loading_anim.lottie"}
-                        loop={true}
+                        key={animationSrc}
+                        src={animationSrc}
+                        loop={!isReady}
                         autoplay
                     />
-                    {/*<DotLottieReact*/}
-                    {/*    src={*/}
-                    {/*        numberOfPlayers === maxNumberOfPlayers*/}
-                    {/*            ? "/accepted_anim.lottie"*/}
-                    {/*            : "/loading_anim.lottie"*/}
-                    {/*    }*/}
-                    {/*    loop={numberOfPlayers !== maxNumberOfPlayers}*/}
-                    {/*    autoplay*/}
-                    {/*/>*/}
+
                 </div>
 
-                {/* Licznik graczy */}
-                {/*<div className="mt-2 w-24 h-24">*/}
-                {/*    <DotLottieReact*/}
-                {/*        src="/loading_numb_anim.lottie"*/}
-                {/*        loop={false}*/}
-                {/*        autoplay={false}*/}
-                {/*        lottieRef={numberLottieRef}*/}
-                {/*    />*/}
-                {/*</div>*/}
+                <div className="text-3xl font-mono text-emerald-400 drop-shadow-md">
+                    <CountUp
+                        end={players.length}
+                        duration={0.6}
+                    />
+                    <span className="text-emerald-200"> / {gameReq.maxNumbersOfPlayers}</span>
+                </div>
 
-                <p className="mt-1 text-sm text-gray-300">
-                    {players?.length} / {gameReq.maxNumbersOfPlayers} players
-                </p>
-            </h2>
-        </div>
-    );
+                {/*<div className="text-sm text-gray-400">*/}
+                {/*    {players.length} / {gameReq.maxNumbersOfPlayers}*/}
+                {/*</div>*/}
+</h2>
+</div>
+);
 
 }
 

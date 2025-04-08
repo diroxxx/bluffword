@@ -1,4 +1,4 @@
-import {use, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import { useStompClient, useSubscription } from "react-stomp-hooks";
 import PlayerList from "../pages/playerGameRoomComponents/PlayerList"
@@ -61,6 +61,7 @@ function RoomLobby() {
 
 
     useSubscription(`/topic/room/${code}/start`, (message) => {
+        console.log("game_started")
         const body = message.body;
 
         if (body === "GAME_STARTED") {

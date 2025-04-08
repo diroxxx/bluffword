@@ -31,6 +31,7 @@ public class GameRoundController {
         room.setVoteTime(gameSettings.getVoteTime());
         room.setRoundTime(gameSettings.getRoundTime());
 
+
         int randomIndex = gameRoomMemory.generateRandomIndex(room.getPlayers().size());
         room.getPlayers().get(randomIndex).setIsImpostor(true);
 
@@ -40,6 +41,8 @@ public class GameRoundController {
         );
         return ResponseEntity.ok().build();
     }
+
+
 
 
 }

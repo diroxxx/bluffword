@@ -1,9 +1,6 @@
 package org.bluffwordbackend.dtos;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.bluffwordbackend.models.GameMode;
 
 import java.util.ArrayList;
