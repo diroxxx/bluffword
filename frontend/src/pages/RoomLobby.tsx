@@ -42,7 +42,7 @@ function RoomLobby() {
             destination: `/app/room/${code}/players`,
             body: JSON.stringify({
                 nickname: storedPlayer.nickname,
-                isImpostor: false,
+                // isImpostor: false,
                 isHost: storedPlayer.isHost,
             })
         });
@@ -65,7 +65,8 @@ function RoomLobby() {
         const body = message.body;
 
         if (body === "GAME_STARTED") {
-            navigate(`/room/${code}/round`);
+            const roundNumber= 0;
+            navigate(`/room/${code}/round/${roundNumber}`);
         }
     });
 

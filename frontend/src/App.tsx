@@ -16,7 +16,7 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/enter-name" element={<EnterNicknamePage />} />
                     <Route path="/room/:code" element={<RoomLobby />} />
-                    <Route path="/room/:code/round" element={<GameRoundPage />} />
+                    <Route path="/room/:code/round/:numberForRound" element={<GameRoundPage />} />
 
                 </Routes>
             </Router>

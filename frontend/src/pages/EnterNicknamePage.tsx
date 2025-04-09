@@ -63,7 +63,7 @@ function EnterNicknamePage() {
                 alert("Unable to reconnect. Please try again later.");
                 return;
             }
-        }
+            }
 
         try {
             let roomCode = existingCode;
@@ -77,7 +77,7 @@ function EnterNicknamePage() {
                     "http://localhost:8080/api/gameRoom/create",
                     {
                         nickname: nickname.trim(),
-                        isImpostor: null,
+                        // isImpostor: null,
                         isHost: true,
                     }
                 );
@@ -86,7 +86,7 @@ function EnterNicknamePage() {
                     destination: `/app/room/${roomCode}/players`,
                     body: JSON.stringify({
                         nickname: nickname.trim(),
-                        isImpostor: false,
+                        // isImpostor: false,
                         isHost: true,
                     })
                 });
@@ -97,12 +97,17 @@ function EnterNicknamePage() {
                 currentPlayer.isImpostor = false;
 
             } else if (mode === "JOIN") {
+                // await axios.post(`http://localhost:8080/api/gameRoom/${roomCode}/join`, {
+                //     nickname: nickname.trim(),
+                //     isImpostor: null,
+                //     isHost: false,
+                // });
 
                 activeStompClient.publish({
                     destination: `/app/room/${roomCode}/players`,
                     body: JSON.stringify({
                         nickname: nickname.trim(),
-                        isImpostor: false,
+                        // isImpostor: false,
                         isHost: false,
                     })
                 });
