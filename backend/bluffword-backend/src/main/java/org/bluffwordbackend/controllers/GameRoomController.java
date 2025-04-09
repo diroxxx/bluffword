@@ -159,11 +159,4 @@ public class GameRoomController {
 
     }
 
-
-    @Data
-    @AllArgsConstructor
-    public static class ClueMessage {
-        private String clue;
-        private String nickname;
-    }
 }

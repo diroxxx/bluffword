@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PlayerInfoDto {
     private String nickname;
-    private Boolean isImpostor;
+//    private Boolean isImpostor;
     private Boolean isHost;
     private String sessionId;
 }

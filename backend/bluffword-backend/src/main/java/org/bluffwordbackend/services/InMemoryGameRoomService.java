@@ -19,6 +19,8 @@ public class InMemoryGameRoomService {
         rooms.put(code, state);
     }
 
+
+
     public boolean removePlayerFromRoom(String code, String nickname) {
         GameRoomState room = rooms.get(code);
         if (room != null) {
@@ -39,16 +41,6 @@ public class InMemoryGameRoomService {
         return new ArrayList<>(rooms.values());
     }
 
-    public GameRoomState removePlayerBySession(String sessionId) {
-        for (GameRoomState room : this.getAllRooms()) {
-            boolean removed = room.getPlayers().removeIf(p -> sessionId.equals(p.getSessionId()));
-            if (removed) {
-                System.out.println("Usunięto gracza z pokoju " + room.getCode());
-                log.info("Player has been deletet: {}",room.getCode());
-            }
-        }
-        return null;
-    }
 
     public int generateRandomIndex(int size) {
         return random.nextInt(size);
