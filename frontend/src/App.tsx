@@ -10,6 +10,7 @@ import GameRoundPage from "./pages/GameRoundPage.tsx";
 function App() {
     return (
     <StompSessionProvider url="ws://localhost:8080/ws/websocket">
+    {/*<StompSessionProvider url="ws://backend:8080/ws/websocket">*/}
         <PlayerProvider>
             <Router>
                 <Routes>

@@ -1,10 +1,8 @@
 import {useParams} from "react-router-dom";
-import {usePlayer} from "../PlayerContext.tsx";
 import {useStompClient, useSubscription} from "react-stomp-hooks";
 import {listOfPlayers, PlayerInfo, gameReqAtom} from "../Atom.tsx";
 import {useAtom} from "jotai/index";
 import Countdown, { CountdownRendererFn } from 'react-countdown';
-import PlayerList from "./playerGameRoomComponents/PlayerList.tsx";
 import {useAtomValue} from "jotai";
 import {useEffect, useState} from "react";
 import axios from "axios";
