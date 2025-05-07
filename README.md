@@ -1,4 +1,4 @@
-# Bluffword
+# Bluffword - In progress
 
 **Bluffword** is a real-time multiplayer party game of words, bluffing, and deduction. In each round, all players receive a secret word — except one. That one player, the impostor, must fake it without being caught!
 
