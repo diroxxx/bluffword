@@ -2,6 +2,7 @@ package org.bluffwordbackend.services;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.bluffwordbackend.models.GameRoom;
 import org.bluffwordbackend.repositories.GameRoomRepository;
 import org.springframework.stereotype.Service;
 

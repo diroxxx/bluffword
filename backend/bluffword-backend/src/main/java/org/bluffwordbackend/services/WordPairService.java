@@ -1,7 +1,6 @@
 package org.bluffwordbackend.services;
 
 import lombok.RequiredArgsConstructor;
-import org.bluffwordbackend.repositories.WordPairRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
