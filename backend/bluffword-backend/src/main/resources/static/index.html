@@ -11,7 +11,7 @@
 </head>
 <body>
 <h1>WebSocket Test</h1>
-<p id="status">🔄 Connecting...</p>
+<p id="status"> Connecting...</p>
 <ul id="msgs"></ul>
 
 <script>
@@ -19,8 +19,8 @@
     const stompClient = Stomp.over(socket);
 
     stompClient.connect({}, function (frame) {
-        console.log("✅ Connected: " + frame);
-        document.getElementById("status").innerText = "✅ Connected";
+        console.log(" Connected: " + frame);
+        document.getElementById("status").innerText = " Connected";
 
         stompClient.subscribe("/topic/test", function (message) {
             const li = document.createElement("li");

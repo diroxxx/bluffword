@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import { usePlayer } from "../PlayerContext";
-import { useStompClient, useSubscription } from "react-stomp-hooks";
+import { useStompClient} from "react-stomp-hooks";
 import { Client } from "@stomp/stompjs";
 import {useSetAtom} from "jotai/index";
 import {connectedToWebSocket, stompClientState} from "../Atom.tsx";
@@ -19,16 +18,12 @@ function EnterNicknamePage() {
     const [nickname, setNickname] = useState("");
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    // const { setPlayer } = usePlayer();
     const mode = searchParams.get("mode");
     const existingCode = searchParams.get("code");
     const stompClient = useStompClient();
 
     const setConnectedToWebSocket = useSetAtom(connectedToWebSocket);
     const [stompState, setStompState] = useAtom(stompClientState);
-
-
-
 
     const handleSubmit = async () => {
         if (!nickname.trim()) {
