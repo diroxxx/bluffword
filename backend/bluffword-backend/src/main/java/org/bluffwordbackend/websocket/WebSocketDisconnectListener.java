@@ -21,8 +21,6 @@ public class WebSocketDisconnectListener implements ApplicationListener<SessionD
     private final Map<String, ScheduledFuture<?>> disconnectTimers = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-
-
     @Override
     public void onApplicationEvent(SessionDisconnectEvent event) {
         String sessionId = event.getSessionId();
