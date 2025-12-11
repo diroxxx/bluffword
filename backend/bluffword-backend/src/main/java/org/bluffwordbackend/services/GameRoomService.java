@@ -24,14 +24,15 @@ public class GameRoomService {
     }
 
     @Transactional
-    public PlayerDto createRoom(String nickname) {
+    public PlayerDto createRoom(String nickname, int maxPlayers) {
         Player player = playerService.createPlayer(nickname);
 
         if (player != null) {
 
             GameRoom gameRoomCopy = new GameRoom();
-
             gameRoomCopy.setCode(generateRoomCode());
+            gameRoomCopy.setMaxPlayers(maxPlayers);
+
             RoomPlayer roomPlayer = new RoomPlayer();
             roomPlayer.setPlayer(player);
             roomPlayer.setGameRoom(gameRoomCopy);

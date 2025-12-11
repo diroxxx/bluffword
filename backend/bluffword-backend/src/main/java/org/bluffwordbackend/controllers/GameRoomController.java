@@ -2,6 +2,7 @@ package org.bluffwordbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bluffwordbackend.dtos.CreateGameRoomRequestDto;
 import org.bluffwordbackend.dtos.JoinGameRoomRequestDto;
 import org.bluffwordbackend.dtos.PlayerDto;
 import org.bluffwordbackend.services.GameRoomBroadcaster;
@@ -51,15 +52,22 @@ public class GameRoomController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createRoom(@RequestBody Map<String,String> request) {
-        String nickname = request.get("nickname");
-        PlayerDto playerDto = gameRoomService.createRoom(nickname);
+    public ResponseEntity<?> createRoom(@RequestBody CreateGameRoomRequestDto request) {
+        if (request == null || request.nickname() == null || request.nickname().isBlank()) {
+                        return ResponseEntity.badRequest().body(Map.of("message", "nickname is required"));
+        }
+
+        PlayerDto playerDto = gameRoomService.createRoom(request.nickname(), request.maxPlayers());
+        if (playerDto == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
         List<PlayerDto> playerDtos = gameRoomService.getListOfPlayers(playerDto.getRoomCode());
         gameRoomBroadcaster.broadcastPlayers(playerDto.getRoomCode(), playerDtos);
 
         return ResponseEntity.ok(playerDto);
-
     }
+
 
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody JoinGameRoomRequestDto request) {
@@ -87,9 +95,5 @@ public class GameRoomController {
 
         List<PlayerDto> playerDtos = gameRoomService.getListOfPlayers(code);
         gameRoomBroadcaster.broadcastPlayers(code, playerDtos);
-
-
-
     }
-
 }

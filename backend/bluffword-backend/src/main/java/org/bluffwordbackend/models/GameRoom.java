@@ -19,6 +19,7 @@ public class GameRoom {
     @Column(unique = true, nullable = false)
     private String code;
     private int roundTotal;
+    private int currentRound;
     private int maxPlayers;
 
 //    @ManyToOne(fetch = FetchType.LAZY, optional = false)
