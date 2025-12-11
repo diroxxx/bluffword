@@ -14,13 +14,16 @@ public class Player {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(unique = true)
     private Long id;
+//    private String id;
 
     private String nickname;
+
 
     @OneToMany(mappedBy = "player")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private Set<GameRoom> gameRooms = new HashSet<>();
+    private Set<RoomPlayer> roomPlayers = new HashSet<>();
 
 }

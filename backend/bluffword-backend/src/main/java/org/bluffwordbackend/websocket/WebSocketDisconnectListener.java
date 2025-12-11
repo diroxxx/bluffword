@@ -2,15 +2,12 @@ package org.bluffwordbackend.websocket;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.bluffwordbackend.dtos.GameRoomState;
-import org.bluffwordbackend.dtos.PlayerInfoDto;
 import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.*;
 
 @Slf4j

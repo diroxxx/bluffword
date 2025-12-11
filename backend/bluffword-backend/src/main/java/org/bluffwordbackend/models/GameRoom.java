@@ -27,7 +27,7 @@ public class GameRoom {
 //    @ToString.Exclude
 //    private Player player;
 
-    @OneToMany(mappedBy = "game_room", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "gameRoom", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<RoomPlayer> players = new HashSet<>();

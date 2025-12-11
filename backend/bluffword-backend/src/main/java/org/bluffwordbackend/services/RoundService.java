@@ -13,11 +13,5 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class RoundService {
-    private final RoundRepository roundRepository;
-    private final GameRoomRepository gameRoomRepository;
-    private final WordPairRepository wordPairRepository;
-    private final RoleRoundRepository roleRoundRepository;
-
-
 
 }

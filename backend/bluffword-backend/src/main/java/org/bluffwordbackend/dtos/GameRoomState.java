@@ -12,7 +12,7 @@ import java.util.Map;
 public class GameRoomState {
     private String code;
     private GameMode mode;
-    private List<PlayerInfoDto> players = new ArrayList<>();
+    private List<PlayerDto> players = new ArrayList<>();
     private Boolean isStarted;
     private Integer numberOfRounds;
     private Integer voteTime;

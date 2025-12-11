@@ -12,10 +12,12 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
-#    defer-datasource-initialization: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
 logging:
   level:
     org:

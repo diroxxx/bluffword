@@ -8,15 +8,15 @@ import org.bluffwordbackend.models.Player;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PlayerInfoDto {
+public class PlayerDto {
+    private Long id;
     private String nickname;
-//    private Boolean isImpostor;
     private Boolean isHost;
-    private String sessionId;
+    private String roomCode;
 
-
-    public static   PlayerInfoDto toDto(Player player) {
-        PlayerInfoDto dto = new PlayerInfoDto();
+    public static PlayerDto toDto(Player player) {
+        PlayerDto dto = new PlayerDto();
+        dto.setId(player.getId());
         dto.setNickname(player.getNickname());
         return dto;
     }
