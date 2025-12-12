@@ -2,6 +2,7 @@ package org.bluffwordbackend.services;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.bluffwordbackend.dtos.GameRoomSettingsDto;
 import org.bluffwordbackend.dtos.PlayerDto;
 import org.bluffwordbackend.models.GameRoom;
 import org.bluffwordbackend.models.Player;
@@ -82,8 +83,6 @@ public class GameRoomService {
     }
 
 
-
-
     @Transactional()
     public List<PlayerDto> getListOfPlayers(String code) {
         Optional<GameRoom> gameRoom = gameRoomRepository.findByCodeFetchPlayers(code);
@@ -118,6 +117,21 @@ public class GameRoomService {
                 playerRepository.deleteById(playerId);
             }
         }
+    }
+
+
+    public GameRoomSettingsDto getRoomSettings(String roomCode) {
+        Optional<GameRoom> gameRoomOpt = gameRoomRepository.findByCodeFetchPlayers(roomCode);
+        if (gameRoomOpt.isPresent()) {
+            GameRoom gameRoom = gameRoomOpt.get();
+            return new GameRoomSettingsDto(
+                    gameRoom.getMaxPlayers(),
+                    gameRoom.getRoundTotal(),
+                    gameRoom.getCode(),
+                    gameRoom.getRoundTimeSeconds()
+            );
+        }
+        return null;
     }
 
 

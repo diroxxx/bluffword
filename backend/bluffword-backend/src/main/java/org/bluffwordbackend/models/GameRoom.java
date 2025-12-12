@@ -21,6 +21,7 @@ public class GameRoom {
     private int roundTotal;
     private int currentRound;
     private int maxPlayers;
+    private int roundTimeSeconds;
 
 //    @ManyToOne(fetch = FetchType.LAZY, optional = false)
 //    @JoinColumn(name = "player_id")

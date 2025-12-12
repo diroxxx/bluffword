@@ -96,4 +96,13 @@ public class GameRoomController {
         List<PlayerDto> playerDtos = gameRoomService.getListOfPlayers(code);
         gameRoomBroadcaster.broadcastPlayers(code, playerDtos);
     }
+
+    @GetMapping("/settings")
+    public ResponseEntity<?> getGameSettings(@RequestParam String roomCode) {
+
+       return ResponseEntity.ok(gameRoomService.getRoomSettings(roomCode));
+
+    }
+
+
 }
