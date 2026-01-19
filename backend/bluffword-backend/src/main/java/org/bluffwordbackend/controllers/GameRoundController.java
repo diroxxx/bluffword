@@ -15,5 +15,4 @@ public class GameRoundController {
     private final SimpMessagingTemplate messagingTemplate;
     private final WordPairService wordPairService;
 
-//
 }

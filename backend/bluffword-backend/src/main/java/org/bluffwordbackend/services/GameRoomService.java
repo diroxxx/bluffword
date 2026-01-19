@@ -25,14 +25,20 @@ public class GameRoomService {
     }
 
     @Transactional
-    public PlayerDto createRoom(String nickname, int maxPlayers) {
+    public PlayerDto createRoom(String nickname, GameRoomSettingsDto settingsDto) {
         Player player = playerService.createPlayer(nickname);
 
         if (player != null) {
 
             GameRoom gameRoomCopy = new GameRoom();
             gameRoomCopy.setCode(generateRoomCode());
-            gameRoomCopy.setMaxPlayers(maxPlayers);
+            gameRoomCopy.setMaxPlayers(settingsDto.maxPlayers());
+            gameRoomCopy.setMinPlayers(settingsDto.minPlayers());
+            gameRoomCopy.setRoundTotal(settingsDto.roundTotal());
+            gameRoomCopy.setTimeLimitAnswer(settingsDto.timeLimitAnswer());
+            gameRoomCopy.setTimeLimitVote(settingsDto.timeLimitVote());
+            gameRoomCopy.setMode(settingsDto.mode());
+            gameRoomCopy.setHost(player);
 
             RoomPlayer roomPlayer = new RoomPlayer();
             roomPlayer.setPlayer(player);
@@ -119,16 +125,18 @@ public class GameRoomService {
         }
     }
 
-
     public GameRoomSettingsDto getRoomSettings(String roomCode) {
         Optional<GameRoom> gameRoomOpt = gameRoomRepository.findByCodeFetchPlayers(roomCode);
         if (gameRoomOpt.isPresent()) {
             GameRoom gameRoom = gameRoomOpt.get();
             return new GameRoomSettingsDto(
-                    gameRoom.getMaxPlayers(),
-                    gameRoom.getRoundTotal(),
                     gameRoom.getCode(),
-                    gameRoom.getRoundTimeSeconds()
+                    gameRoom.getRoundTotal(),
+                    gameRoom.getMaxPlayers(),
+                    gameRoom.getMinPlayers(),
+                    gameRoom.getTimeLimitAnswer(),
+                    gameRoom.getTimeLimitVote(),
+                    gameRoom.getMode()
             );
         }
         return null;

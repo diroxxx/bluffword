@@ -3,6 +3,7 @@ package org.bluffwordbackend.controllers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bluffwordbackend.dtos.CreateGameRoomRequestDto;
+import org.bluffwordbackend.dtos.GameRoomSettingsDto;
 import org.bluffwordbackend.dtos.JoinGameRoomRequestDto;
 import org.bluffwordbackend.dtos.PlayerDto;
 import org.bluffwordbackend.services.GameRoomBroadcaster;
@@ -36,14 +37,6 @@ public class GameRoomController {
 
     private final ModelMapper modelMapper;
 
-//    @GetMapping("/GameModes")
-//    public ResponseEntity<List<GameMode>> getGameModes() {
-//        List<GameMode> gameModes = new ArrayList<>();
-//        gameModes.add(GameMode.STATIC_IMPOSTOR);
-//        gameModes.add(GameMode.ROUND_IMPOSTOR);
-//        return ResponseEntity.ok(gameModes);
-//    }
-
 
     @GetMapping("/test")
     public ResponseEntity<?> getListOfPlayers(@RequestParam String roomCode) {
@@ -52,12 +45,15 @@ public class GameRoomController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createRoom(@RequestBody CreateGameRoomRequestDto request) {
-        if (request == null || request.nickname() == null || request.nickname().isBlank()) {
+    public ResponseEntity<?> createRoom(@RequestBody String nickname, @RequestBody GameRoomSettingsDto gameRoomSettingsDto) {
+        if ( nickname == null || nickname.isBlank()) {
                         return ResponseEntity.badRequest().body(Map.of("message", "nickname is required"));
         }
+        if ( gameRoomSettingsDto == null ) {
+            return ResponseEntity.badRequest().body(Map.of("message", "game Settings are required"));
+        }
 
-        PlayerDto playerDto = gameRoomService.createRoom(request.nickname(), request.maxPlayers());
+        PlayerDto playerDto = gameRoomService.createRoom(nickname, gameRoomSettingsDto);
         if (playerDto == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -85,7 +81,6 @@ public class GameRoomController {
         gameRoomBroadcaster.broadcastPlayers(roomCode, playerDtos);
 
     }
-
 
     @DeleteMapping("/players")
     public void deletePlayerFromRoom(@RequestBody Map<String, String> request) {

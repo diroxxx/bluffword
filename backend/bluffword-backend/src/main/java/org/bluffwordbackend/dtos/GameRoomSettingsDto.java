@@ -1,9 +1,15 @@
 package org.bluffwordbackend.dtos;
 
+import org.bluffwordbackend.models.GameMode;
+
 public record GameRoomSettingsDto(
-        int maxPlayers,
-        int roundTotal,
         String roomCode,
-        int roundTimeSeconds
+        int roundTotal,
+        int maxPlayers,
+        int minPlayers,
+        int timeLimitAnswer,
+        int timeLimitVote,
+        GameMode mode
+
         ) {
 }

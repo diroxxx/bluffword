@@ -16,14 +16,29 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true)
     private Long id;
-//    private String id;
 
     private String nickname;
-
 
     @OneToMany(mappedBy = "player")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<RoomPlayer> roomPlayers = new HashSet<>();
 
+    @OneToMany(mappedBy = "host")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Set<GameRoom> gameRooms = new HashSet<>();
+
+    @OneToMany(mappedBy = "player")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Set<PlayerRound> playerRounds = new HashSet<>();
+
+    @OneToMany(mappedBy = "voter")
+    @EqualsAndHashCode.Exclude
+    private Set<Vote> voterVotes = new HashSet<>();
+
+    @OneToMany(mappedBy = "target")
+    @EqualsAndHashCode.Exclude
+    private Set<Vote> targetVotes = new HashSet<>();
 }

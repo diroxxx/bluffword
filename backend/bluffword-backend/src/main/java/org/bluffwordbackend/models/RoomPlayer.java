@@ -14,17 +14,15 @@ public class RoomPlayer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     private boolean isHost = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "player_id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Player player;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "game_room_id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude

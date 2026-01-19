@@ -1,10 +1,12 @@
 package org.bluffwordbackend.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.antlr.v4.runtime.misc.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,20 +20,28 @@ public class GameRoom {
 
     @Column(unique = true, nullable = false)
     private String code;
+
     private int roundTotal;
     private int currentRound;
-    private int maxPlayers;
-    private int roundTimeSeconds;
 
-//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//    @JoinColumn(name = "player_id")
-//    @EqualsAndHashCode.Exclude
-//    @ToString.Exclude
-//    private Player player;
+    private int maxPlayers;
+
+    private int minPlayers;
+
+    private int timeLimitAnswer;
+
+    private int timeLimitVote;
+
+    @Enumerated(EnumType.STRING)
+    private GameMode mode;
 
     @OneToMany(mappedBy = "gameRoom", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<RoomPlayer> players = new HashSet<>();
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "player_id")
+    private  Player host;
 
 }
