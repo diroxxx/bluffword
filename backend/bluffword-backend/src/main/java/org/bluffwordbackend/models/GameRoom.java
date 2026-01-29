@@ -33,7 +33,10 @@ public class GameRoom {
     private int timeLimitVote;
 
     @Enumerated(EnumType.STRING)
-    private GameMode mode;
+    private GameRoomState mode;
+
+    @Enumerated(EnumType.STRING)
+    private GameMode gameMode;
 
     @OneToMany(mappedBy = "gameRoom", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude

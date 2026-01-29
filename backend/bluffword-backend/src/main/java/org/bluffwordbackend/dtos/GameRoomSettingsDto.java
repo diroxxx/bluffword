@@ -1,6 +1,7 @@
 package org.bluffwordbackend.dtos;
 
 import org.bluffwordbackend.models.GameMode;
+import org.bluffwordbackend.models.GameRoomState;
 
 public record GameRoomSettingsDto(
         String roomCode,
@@ -9,7 +10,8 @@ public record GameRoomSettingsDto(
         int minPlayers,
         int timeLimitAnswer,
         int timeLimitVote,
-        GameMode mode
+        GameMode mode,
+        GameRoomState gameRoomState
 
         ) {
 }

@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+    --color-molten-lava: #780000ff;
+    --color-brick-red: #c1121fff;
+    --color-papaya-whip: #fdf0d5ff;
+    --color-deep-space-blue: #003049ff;
+    --color-steel-blue: #669bbcff;
+}
+
+@keyframes pulse-slow {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+}
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.delay-1000 { animation-delay: 1s; }

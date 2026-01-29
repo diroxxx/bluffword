@@ -21,6 +21,9 @@ public class WordPair {
     @NotNull
     private String impostorWord;
 
+    @Enumerated(EnumType.STRING)
+    private WordCategory category;
+
     @OneToMany(mappedBy = "wordPair")
     private Set<Round> rounds = new HashSet<>();
 

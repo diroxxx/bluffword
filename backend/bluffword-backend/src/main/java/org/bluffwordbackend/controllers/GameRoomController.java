@@ -64,7 +64,6 @@ public class GameRoomController {
         return ResponseEntity.ok(playerDto);
     }
 
-
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody JoinGameRoomRequestDto request) {
         PlayerDto playerDto = gameRoomService.joinRoom(request.nickname(), request.roomCode());

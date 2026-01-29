@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.bluffwordbackend.dtos.GameRoomSettingsDto;
 import org.bluffwordbackend.dtos.PlayerDto;
 import org.bluffwordbackend.models.GameRoom;
+import org.bluffwordbackend.models.GameRoomState;
 import org.bluffwordbackend.models.Player;
 import org.bluffwordbackend.models.RoomPlayer;
 import org.bluffwordbackend.repositories.GameRoomRepository;
@@ -19,6 +20,7 @@ public class GameRoomService {
     private final GameRoomRepository gameRoomRepository;
     private final PlayerRepository playerRepository;
     private final PlayerService playerService;
+    private final Random random = new Random();
 
     private String generateRoomCode() {
         return UUID.randomUUID().toString().substring(0, 6).toUpperCase();
@@ -37,7 +39,8 @@ public class GameRoomService {
             gameRoomCopy.setRoundTotal(settingsDto.roundTotal());
             gameRoomCopy.setTimeLimitAnswer(settingsDto.timeLimitAnswer());
             gameRoomCopy.setTimeLimitVote(settingsDto.timeLimitVote());
-            gameRoomCopy.setMode(settingsDto.mode());
+            gameRoomCopy.setMode(settingsDto.gameRoomState());
+            gameRoomCopy.setGameMode(settingsDto.mode());
             gameRoomCopy.setHost(player);
 
             RoomPlayer roomPlayer = new RoomPlayer();
@@ -136,6 +139,7 @@ public class GameRoomService {
                     gameRoom.getMinPlayers(),
                     gameRoom.getTimeLimitAnswer(),
                     gameRoom.getTimeLimitVote(),
+                    gameRoom.getGameMode(),
                     gameRoom.getMode()
             );
         }
@@ -143,6 +147,33 @@ public class GameRoomService {
     }
 
 
+    public void retrive(String roomCode) {
+        Optional<GameRoom> gameRoomByCode = gameRoomRepository.findGameRoomByCode(roomCode);
 
+        if (gameRoomByCode.isPresent()) {
+            gameRoomByCode.get().setCurrentRound(1);
+            gameRoomByCode.get().setMode(GameRoomState.GAME_START);
+        }
+
+    }
+
+    public Optional<Long> chooseRandomImpostor(String roomCode) {
+
+        Optional<GameRoom> gameRoomByCode = gameRoomRepository.findGameRoomByCode(roomCode);
+        if (gameRoomByCode.isPresent()) {
+            List<Player> allPlayersInRoom = gameRoomRepository.findAllPlayersInRoom(gameRoomByCode.get().getId());
+            int randomPlayerId = generateRandomNumber(0, allPlayersInRoom.size());
+            return Optional.of(allPlayersInRoom.get(randomPlayerId).getId());
+
+        } else {
+            throw new RuntimeException("Room not found");
+        }
+
+    }
+
+
+    private int generateRandomNumber(int min, int max) {
+        return random.nextInt((max - min) + 1) + min;
+    }
 
 }

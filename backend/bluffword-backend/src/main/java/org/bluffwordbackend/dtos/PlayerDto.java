@@ -13,6 +13,7 @@ public class PlayerDto {
     private String nickname;
     private Boolean isHost;
     private String roomCode;
+//    private int currentRound;
 
     public static PlayerDto toDto(Player player) {
         PlayerDto dto = new PlayerDto();
