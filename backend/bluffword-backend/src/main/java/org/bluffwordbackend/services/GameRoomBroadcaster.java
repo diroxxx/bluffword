@@ -1,7 +1,7 @@
 package org.bluffwordbackend.services;
 
 import lombok.RequiredArgsConstructor;
-import org.bluffwordbackend.dtos.PlayerDto;
+import org.bluffwordbackend.redisDtos.PlayerDto;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 

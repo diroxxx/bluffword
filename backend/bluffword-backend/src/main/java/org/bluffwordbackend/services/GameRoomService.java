@@ -3,7 +3,7 @@ package org.bluffwordbackend.services;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.bluffwordbackend.dtos.GameRoomSettingsDto;
-import org.bluffwordbackend.dtos.PlayerDto;
+import org.bluffwordbackend.redisDtos.PlayerDto;
 import org.bluffwordbackend.models.GameRoom;
 import org.bluffwordbackend.models.GameRoomState;
 import org.bluffwordbackend.models.Player;

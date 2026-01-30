@@ -1,4 +1,4 @@
-package org.bluffwordbackend.dtos;
+package org.bluffwordbackend.redisDtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +13,6 @@ public class PlayerDto {
     private String nickname;
     private Boolean isHost;
     private String roomCode;
-//    private int currentRound;
 
     public static PlayerDto toDto(Player player) {
         PlayerDto dto = new PlayerDto();

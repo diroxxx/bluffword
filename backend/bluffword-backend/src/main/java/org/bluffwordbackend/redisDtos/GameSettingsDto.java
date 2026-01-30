@@ -1,9 +1,11 @@
-package org.bluffwordbackend.dtos;
+package org.bluffwordbackend.redisDtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.bluffwordbackend.models.GameMode;
 
 @Data
+@AllArgsConstructor
 public class GameSettingsDto {
     private String roomCode;
     private int roundTotal;

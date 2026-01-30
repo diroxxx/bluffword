@@ -2,10 +2,9 @@ package org.bluffwordbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.bluffwordbackend.dtos.CreateGameRoomRequestDto;
 import org.bluffwordbackend.dtos.GameRoomSettingsDto;
 import org.bluffwordbackend.dtos.JoinGameRoomRequestDto;
-import org.bluffwordbackend.dtos.PlayerDto;
+import org.bluffwordbackend.redisDtos.PlayerDto;
 import org.bluffwordbackend.services.GameRoomBroadcaster;
 import org.bluffwordbackend.services.GameRoomService;
 import org.bluffwordbackend.services.RoundService;

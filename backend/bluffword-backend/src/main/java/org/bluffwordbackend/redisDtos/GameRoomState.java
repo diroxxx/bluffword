@@ -1,7 +1,9 @@
-package org.bluffwordbackend.dtos;
+package org.bluffwordbackend.redisDtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.bluffwordbackend.models.GameMode;
+import org.springframework.data.redis.core.RedisHash;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,18 +11,15 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@AllArgsConstructor
+@RedisHash("gameRoomState")
 public class GameRoomState {
-    private String code;
-    private GameMode mode;
-    private List<PlayerDto> players = new ArrayList<>();
-    private Boolean isStarted;
-    private Integer numberOfRounds;
-    private Integer voteTime;
-    private Integer roundTime;
-    private Map<Integer,RoundState> roundStateMap = new HashMap<>();
-    public GameRoomState(String code) {
-        this.code = code;
-        this.players = new ArrayList<>();
-        this.isStarted = false;
-    }
+
+    private GameSettingsDto settings;
+
+
+    private Map<Long, PlayerDto> players = new HashMap<>();
+
+    private Map<Integer, RoundState> roundStateMap;
+
 }
