@@ -1,5 +1,6 @@
 package org.bluffwordbackend.dtos;
 
+import org.bluffwordbackend.models.CategorySelectionMode;
 import org.bluffwordbackend.models.GameMode;
 import org.bluffwordbackend.models.GameRoomState;
 
@@ -11,7 +12,11 @@ public record GameRoomSettingsDto(
         int timeLimitAnswer,
         int timeLimitVote,
         GameMode mode,
-        GameRoomState gameRoomState
+        GameRoomState gameRoomState,
+
+        CategorySelectionMode categorySelectionMode,
+
+        String staticCategory
 
         ) {
 }

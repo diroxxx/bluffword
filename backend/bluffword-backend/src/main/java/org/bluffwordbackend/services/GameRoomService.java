@@ -3,13 +3,12 @@ package org.bluffwordbackend.services;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.bluffwordbackend.dtos.GameRoomSettingsDto;
+import org.bluffwordbackend.models.*;
 import org.bluffwordbackend.redisDtos.PlayerDto;
-import org.bluffwordbackend.models.GameRoom;
-import org.bluffwordbackend.models.GameRoomState;
-import org.bluffwordbackend.models.Player;
-import org.bluffwordbackend.models.RoomPlayer;
 import org.bluffwordbackend.repositories.GameRoomRepository;
 import org.bluffwordbackend.repositories.PlayerRepository;
+import org.bluffwordbackend.repositories.WordCategoryRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,6 +19,7 @@ public class GameRoomService {
     private final GameRoomRepository gameRoomRepository;
     private final PlayerRepository playerRepository;
     private final PlayerService playerService;
+    private final WordCategoryRepository wordCategoryRepository;
     private final Random random = new Random();
 
     private String generateRoomCode() {
@@ -32,27 +32,41 @@ public class GameRoomService {
 
         if (player != null) {
 
+            WordCategory wordCategory = null;
+
+            if (settingsDto.staticCategory() != null) {
+                wordCategory = wordCategoryRepository.findByName(settingsDto.staticCategory()).orElse(null);
+            }
+            Set<Player> players = new HashSet<>();
+            players.add(player);
+
             GameRoom gameRoomCopy = new GameRoom();
-            gameRoomCopy.setCode(generateRoomCode());
-            gameRoomCopy.setMaxPlayers(settingsDto.maxPlayers());
-            gameRoomCopy.setMinPlayers(settingsDto.minPlayers());
-            gameRoomCopy.setRoundTotal(settingsDto.roundTotal());
-            gameRoomCopy.setTimeLimitAnswer(settingsDto.timeLimitAnswer());
-            gameRoomCopy.setTimeLimitVote(settingsDto.timeLimitVote());
-            gameRoomCopy.setMode(settingsDto.gameRoomState());
-            gameRoomCopy.setGameMode(settingsDto.mode());
-            gameRoomCopy.setHost(player);
+            gameRoomCopy.builder()
+                    .code(generateRoomCode())
+                    .roundTotal(settingsDto.roundTotal())
+                    .currentRound(0)
+                    .maxPlayers(settingsDto.maxPlayers())
+                    .minPlayers(settingsDto.minPlayers())
+                    .timeLimitAnswer(settingsDto.timeLimitAnswer())
+                    .timeLimitVote(settingsDto.timeLimitVote())
+                    .state(settingsDto.gameRoomState())
+                    .gameMode(settingsDto.mode())
+                    .categorySelectionMode(settingsDto.categorySelectionMode())
+                    .staticCategory(wordCategory)
+                    .players(null)
+                    .host(player)
+                    .build();
+
 
             RoomPlayer roomPlayer = new RoomPlayer();
             roomPlayer.setPlayer(player);
             roomPlayer.setGameRoom(gameRoomCopy);
-            roomPlayer.setHost(true);
             gameRoomCopy.getPlayers().add(roomPlayer);
 
             gameRoomRepository.save(gameRoomCopy);
 
             PlayerDto playerDto = PlayerDto.toDto(player);
-            playerDto.setIsHost(roomPlayer.isHost());
+            playerDto.setIsHost(true);
             playerDto.setRoomCode(gameRoomCopy.getCode());
             return playerDto;
         }
@@ -61,6 +75,21 @@ public class GameRoomService {
     }
 
 
+//    private WordCategory generateStaticCategory(){
+//        wordCategoryRepository.findRandomByCategory()
+//    }
+
+
+
+    public Optional<WordCategory> pickRandomByCategory(String name) {
+        long categoryCount = wordCategoryRepository.countByName(name);
+        if (categoryCount == 0) return Optional.empty();
+
+        int index = random.nextInt((int) categoryCount);
+        return wordCategoryRepository.findByName(name, PageRequest.of(index, 1))
+                .stream()
+                .findFirst();
+    }
 
     @Transactional
     public PlayerDto joinRoom(String nickname, String roomCode) {
@@ -76,7 +105,6 @@ public class GameRoomService {
                 RoomPlayer roomPlayer = new RoomPlayer();
                 roomPlayer.setPlayer(player);
                 roomPlayer.setGameRoom(room);
-                roomPlayer.setHost(false);
                 room.getPlayers().add(roomPlayer);
                 gameRoomRepository.save(room);
 
@@ -98,8 +126,10 @@ public class GameRoomService {
         return gameRoom.map(room -> room.getPlayers()
                 .stream()
                 .map(rp -> {
+                    Player host = room.getHost();
+
                     PlayerDto dto = PlayerDto.toDto(rp.getPlayer());
-                    dto.setIsHost(rp.isHost());
+                    dto.setIsHost(host.getId().equals(rp.getPlayer().getId()));
                     dto.setRoomCode(room.getCode());
                     return dto;
                 })
@@ -132,6 +162,7 @@ public class GameRoomService {
         Optional<GameRoom> gameRoomOpt = gameRoomRepository.findByCodeFetchPlayers(roomCode);
         if (gameRoomOpt.isPresent()) {
             GameRoom gameRoom = gameRoomOpt.get();
+
             return new GameRoomSettingsDto(
                     gameRoom.getCode(),
                     gameRoom.getRoundTotal(),
@@ -140,7 +171,9 @@ public class GameRoomService {
                     gameRoom.getTimeLimitAnswer(),
                     gameRoom.getTimeLimitVote(),
                     gameRoom.getGameMode(),
-                    gameRoom.getMode()
+                    gameRoom.getState(),
+                    gameRoom.getCategorySelectionMode(),
+                    gameRoom.getStaticCategory().getName()
             );
         }
         return null;
@@ -152,7 +185,7 @@ public class GameRoomService {
 
         if (gameRoomByCode.isPresent()) {
             gameRoomByCode.get().setCurrentRound(1);
-            gameRoomByCode.get().setMode(GameRoomState.GAME_START);
+            gameRoomByCode.get().setState(GameRoomState.GAME_START);
         }
 
     }
@@ -174,6 +207,12 @@ public class GameRoomService {
 
     private int generateRandomNumber(int min, int max) {
         return random.nextInt((max - min) + 1) + min;
+    }
+
+
+    public GameRoomState getRoomState(String roomCode) {
+        Optional<GameRoom> gameRoomByCode = gameRoomRepository.findGameRoomByCode(roomCode);
+        return gameRoomByCode.map(GameRoom::getState).orElse(null);
     }
 
 }

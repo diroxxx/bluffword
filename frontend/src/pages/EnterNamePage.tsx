@@ -6,7 +6,8 @@ import { playerInfoAtom } from "../atoms/playerInfoAtom";
 import { postCreateRoom } from "../LobbyContainer/api/postCreateRoom";
 import { postJoinRoom } from "../LobbyContainer/api/postJoinRoom";
 import type { GameSettings } from "../LobbyContainer/types/GameSettings";
-
+import { GameMode, CategorySelectionMode } from "../LobbyContainer/types/GameSettings";
+import { useCategoryNames } from "../LobbyContainer/hooks/useCategoryNames";
 
 function EnterNamePage() {
     const location = useLocation();
@@ -17,7 +18,7 @@ function EnterNamePage() {
     const [roundTotal, setRoundTotal] = useState<number>(5);
     const [timeLimitAnswer, setTimeLimitAnswer] = useState<number>(60);
     const [timeLimitVote, setTimeLimitVote] = useState<number>(30);
-    const [gameMode, setGameMode] = useState<"STATIC_IMPOSTOR" | "ROUND_IMPOSTOR">("ROUND_IMPOSTOR");
+    const [gameMode, setGameMode] = useState<GameMode>(GameMode.STATIC_IMPOSTOR);
     const navigate = useNavigate();
     const [gameSettings, setGameSettings] = useState<GameSettings>({
         roomCode: "",
@@ -26,9 +27,14 @@ function EnterNamePage() {
         minPlayers: 3,
         timeLimitAnswer: 60,
         timeLimitVote: 30,
-        gameMode: "STATIC_IMPOSTOR"
+        gameMode: GameMode.STATIC_IMPOSTOR,
+        categorySelectionMode: CategorySelectionMode.FIXED,
+        staticCategory: undefined,
     });
+
     const [user, setUser] = useAtom(playerInfoAtom);
+    const { data: categoryNames, isLoading, error } = useCategoryNames();
+
 
     const handleNicknameChange = (e: ChangeEvent<HTMLInputElement>) => {
         setNickname(e.target.value);
@@ -236,6 +242,55 @@ function EnterNamePage() {
                                     </button>
                                 </div>
                             </div>
+                            {/* Category Selection Mode */}
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="text-steel-blue/70 text-xs tracking-wider uppercase text-center block">
+                                    Category Selection Mode
+                                </label>
+                                <select
+                                    value={gameSettings.categorySelectionMode}
+                                    onChange={e =>
+                                        setGameSettings(prev => ({
+                                            ...prev,
+                                            categorySelectionMode: e.target.value as CategorySelectionMode,
+                                            staticCategory: undefined, // reset staticCategory on change
+                                        }))
+                                    }
+                                    className="w-full px-4 py-2 rounded-lg bg-deep-space-blue/50 border border-steel-blue/30 text-papaya-whip/90"
+                                >
+                                    <option value={CategorySelectionMode.FIXED}>Fixed</option>
+                                    <option value={CategorySelectionMode.RANDOM_PER_ROUND}>Random per round</option>
+                                    <option value={CategorySelectionMode.PLAYER_CHOSEN_PER_ROUND}>Player chosen per round</option>
+                                </select>
+                            </div>
+
+                            {/* Static Category select if mode is FIXED */}
+                            {gameSettings.categorySelectionMode === CategorySelectionMode.FIXED && (
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-steel-blue/70 text-xs tracking-wider uppercase text-center block">
+                                        Static Category
+                                    </label>
+                                    <select
+                                        value={gameSettings.staticCategory ?? ""}
+                                        onChange={e =>
+                                            setGameSettings(prev => ({
+                                                ...prev,
+                                                staticCategory: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full px-4 py-2 rounded-lg bg-deep-space-blue/50 border border-steel-blue/30 text-papaya-whip/90"
+                                    >
+                                        <option value="" disabled>
+                                            Select category
+                                        </option>
+                                        {Array.isArray(categoryNames) && categoryNames.map((cat: string) => (
+                                            <option key={cat} value={cat}>
+                                                {cat}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     )}
 

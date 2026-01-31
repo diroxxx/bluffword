@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bluffwordbackend.dtos.GameRoomSettingsDto;
 import org.bluffwordbackend.dtos.JoinGameRoomRequestDto;
+import org.bluffwordbackend.records.CreateRoomRequestDto;
 import org.bluffwordbackend.redisDtos.PlayerDto;
 import org.bluffwordbackend.services.GameRoomBroadcaster;
 import org.bluffwordbackend.services.GameRoomService;
 import org.bluffwordbackend.services.RoundService;
+import org.bluffwordbackend.services.WordPairService;
 import org.bluffwordbackend.websocket.WebSocketDisconnectListener;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -27,13 +29,14 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173")
 public class GameRoomController {
 
-   private final SimpMessagingTemplate messagingTemplate;
-   private final WebSocketDisconnectListener webSocketDisconnectListener;
+
     private final GameRoomService gameRoomService;
     private final RoundService roundService;
+    private final WordPairService wordPairService;
 
+    private final SimpMessagingTemplate messagingTemplate;
+    private final WebSocketDisconnectListener webSocketDisconnectListener;
     private final GameRoomBroadcaster gameRoomBroadcaster;
-
     private final ModelMapper modelMapper;
 
 
@@ -44,11 +47,14 @@ public class GameRoomController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createRoom(@RequestBody String nickname, @RequestBody GameRoomSettingsDto gameRoomSettingsDto) {
-        if ( nickname == null || nickname.isBlank()) {
-                        return ResponseEntity.badRequest().body(Map.of("message", "nickname is required"));
+    public ResponseEntity<?> createRoom(@RequestBody CreateRoomRequestDto request) {
+        String nickname = request.nickname();
+        GameRoomSettingsDto gameRoomSettingsDto = request.settings();
+
+        if (nickname == null || nickname.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "nickname is required"));
         }
-        if ( gameRoomSettingsDto == null ) {
+        if (gameRoomSettingsDto == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "game Settings are required"));
         }
 
@@ -80,6 +86,15 @@ public class GameRoomController {
 
     }
 
+
+    @MessageMapping("/room/{roomCode}/state")
+    public void getRoomState(@DestinationVariable String roomCode) {
+
+        gameRoomService.getRoomState(roomCode);
+        gameRoomBroadcaster.broadcastGameRoomState(roomCode, gameRoomService.getRoomState(roomCode));
+
+    }
+
     @DeleteMapping("/players")
     public void deletePlayerFromRoom(@RequestBody Map<String, String> request) {
         String code = request.get("roomCode");
@@ -96,6 +111,4 @@ public class GameRoomController {
        return ResponseEntity.ok(gameRoomService.getRoomSettings(roomCode));
 
     }
-
-
 }

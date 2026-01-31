@@ -27,7 +27,7 @@ public class RoundService {
     }
 
 
-    public Optional<WordPairDto> getWordPair(String roomCode, WordCategory wordCategory) {
+    public Optional<WordPairDto> getWordPair(String roomCode, String wordCategory) {
 
         Optional<GameRoom> gameRoomByCode = gameRoomRepository.findGameRoomByCode(roomCode);
 

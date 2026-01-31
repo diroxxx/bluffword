@@ -3,7 +3,6 @@ package org.bluffwordbackend.repositories;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.bluffwordbackend.models.GameRoom;
 import org.bluffwordbackend.models.Player;
-import org.bluffwordbackend.models.WordCategory;
 import org.bluffwordbackend.models.WordPair;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,13 +42,13 @@ public interface GameRoomRepository extends JpaRepository<GameRoom, Long> {
 
     @Query("""
     select wp from WordPair wp 
-    where wp.category = :category 
+    where wp.category.name = :category 
     and wp not in (
         select r.wordPair from Round r 
         where r.gameRoom.id = :gameRoomId
     )
 """)
-    List<WordPair> findAllWordPairsUnused(@Param("gameRoomId") Long gameRoomId, @Param("category") WordCategory category);
+    List<WordPair> findAllWordPairsUnused(@Param("gameRoomId") Long gameRoomId, @Param("category") String category);
 
     @Query("""
     select rp.player from RoomPlayer rp 

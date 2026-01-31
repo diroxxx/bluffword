@@ -14,8 +14,6 @@ public class RoomPlayer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private boolean isHost = false;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "player_id")
     @EqualsAndHashCode.Exclude

@@ -3,7 +3,9 @@ package org.bluffwordbackend.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,10 +23,14 @@ public class WordPair {
     @NotNull
     private String impostorWord;
 
-    @Enumerated(EnumType.STRING)
-    private WordCategory category;
-
     @OneToMany(mappedBy = "wordPair")
     private Set<Round> rounds = new HashSet<>();
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "word_category_id")
+    @NonNull
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private WordCategory category;
 
 }

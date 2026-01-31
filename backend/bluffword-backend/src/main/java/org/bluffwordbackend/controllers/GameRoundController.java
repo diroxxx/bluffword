@@ -24,10 +24,16 @@ public class GameRoundController {
     @MessageMapping("/room/{roomCode}/round/player/{playerId}/start")
     public void startRound(@DestinationVariable String roomCode, @DestinationVariable Long playerId) {
 
+    }
 
 
+    @MessageMapping("/room/{roomCode}/round/player/{playerId}/word")
+    public void sendRoundWords(@DestinationVariable String roomCode, @DestinationVariable Long playerId) {
 
     }
+
+
+
 
 
 

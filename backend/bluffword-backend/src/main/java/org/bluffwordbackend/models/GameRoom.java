@@ -1,18 +1,16 @@
 package org.bluffwordbackend.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Data
+@Builder
+@AllArgsConstructor
 public class GameRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,10 +31,22 @@ public class GameRoom {
     private int timeLimitVote;
 
     @Enumerated(EnumType.STRING)
-    private GameRoomState mode;
+    @NotNull
+    private GameRoomState state;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private GameMode gameMode;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private CategorySelectionMode categorySelectionMode;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "word_category_id")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private WordCategory staticCategory;
 
     @OneToMany(mappedBy = "gameRoom", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
@@ -47,4 +57,7 @@ public class GameRoom {
     @JoinColumn(name = "player_id")
     private  Player host;
 
+    public GameRoom() {
+
+    }
 }

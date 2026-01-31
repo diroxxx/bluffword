@@ -30,7 +30,7 @@ function LobbyPage() {
 
 
     function sendStartGame() { 
-
+        
 
     }
 
