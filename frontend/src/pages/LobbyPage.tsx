@@ -1,11 +1,14 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useListOfPlayers } from "../hooks/useListOfPlayers";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { playerInfoAtom } from "../atoms/playerInfoAtom";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { gameRoomAtom } from "../atoms/gameRoomAtom";
 import type { GameSettings } from "../LobbyContainer/types/GameSettings";
 import { getGameSettings } from "../LobbyContainer/api/getGameSettings";
+import { useGameStateSocket } from "../shared/useGameStateSocket";
+import { GameRoomState } from "../LobbyContainer/types/gameRoomState";
+import { useNextWord } from "../round/hooks/useNextWord";
 
 function LobbyPage() {
     const location = useLocation();
@@ -16,42 +19,52 @@ function LobbyPage() {
     const [gameRoom, setGameRoom] = useAtom(gameRoomAtom);
     const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
 
-    const { connected, messages: playersResult, send } = useListOfPlayers(player?.roomCode);
+    const { connected, messages: playersResult, send: sendPlayersLists } = useListOfPlayers(player?.roomCode);
+    
+    const { connected: stateConnected, messages: stateResult, send: sendState } = useGameStateSocket(player?.roomCode);
 
-    function handleDeleteUser() { }
+
+    const userInfo = useAtomValue(playerInfoAtom);  
+    const { connected: nextWordConnected, messages: word, send } = useNextWord(userInfo?.roomCode, userInfo?.id);
+    
+    function handleDeleteUser() {
+
+     }
 
     useEffect(() => {
+
+        if (playersResult.length <= 0) sendPlayersLists({});
+
         setGameRoom({
             roomCode: player?.roomCode || "",
             players: [],
         });
-    }, [code, setGameRoom]);
-
+    }, [code, setGameRoom, playersResult]);
 
 
     function sendStartGame() { 
         
-
+        if (stateConnected) {
+            try {
+                send({});
+                navigate("/round", { state: { roomCode: player?.roomCode } });
+                console.log("Start game request sent successfully");
+            } catch (error) {
+                console.error("Error sending start game request:", error);
+            }
+        }
     }
 
     useEffect(() => {
-        if (!connected) {
-            console.log("Connecting to lobby websocket...");
-        } else {
-            console.log("Connected to lobby websocket.");
-            try {
-                send({});
-                console.log("Request sent successfully");
-            } catch (error) {
-                console.error("Error sending request:", error);
-            }
+
+     
+        sendPlayersLists({});
             setGameRoom((prev) => ({
                 ...prev,
                 roomCode: code || prev.roomCode,
             }));
-        }
-    }, [connected, code, send, setGameRoom]);
-
+        
+    }, [connected, code, sendPlayersLists, setGameRoom]);
     useEffect(() => {
         if (playersResult.length > 0) {
             const latestPlayers = playersResult[0];
@@ -136,6 +149,7 @@ function LobbyPage() {
                                 onClick={() => {
                                   navigate("/round", { state: { roomCode: player?.roomCode } });  
                                 
+                                  sendStartGame();
                                 
                                 }}
                             >

@@ -2,10 +2,11 @@ package org.bluffwordbackend.models;
 
 public enum GameRoomState {
     LOBBY,
+    CATEGORY_SELECTION,
     GAME_START,
     ROUND_START,
-    WORD_SELECTION,
+    ANSWERING,
     VOTING,
-    ROUND_END,
+    RESULTS,
     GAME_END
 }

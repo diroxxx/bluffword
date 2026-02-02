@@ -1,6 +1,6 @@
 import { createStompChannelHook } from "../../lib/CustomStomp";
 
-export const useTimerRoundStomp = (roomCode?: string) => {
+export const useTimerRoundStomp = (roomCode?: string, playerId?: number) => {
 
     if (!roomCode) {
         return { connected: false, messages: [], send: () => {} };
@@ -8,7 +8,7 @@ export const useTimerRoundStomp = (roomCode?: string) => {
 
             return createStompChannelHook<number[], {}>(  {
                 url: "ws://localhost:8080/ws",
-                subscribeDestination: `/topic/room/${roomCode}/round/timer`,
+                subscribeDestination: `/topic/round/${roomCode}/time`,
                 sendDestination: `/app/room/${roomCode}/round/timer`,
                 })();
 }

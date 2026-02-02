@@ -1,20 +1,18 @@
 export type GameRoomState =
     | "LOBBY"
-    | "GAME_START"
     | "ROUND_START"
     | "CATEGORY_SELECTION"
-    | "WORD_SELECTION"
+    | "ANSWERING"
     | "VOTING"
-    | "ROUND_END"
+    | "RESULTS"
     | "GAME_END";
 
 export const GameRoomState = {
     LOBBY: "LOBBY",
-    GAME_START: "GAME_START",
     CATEGORY_SELECTION: "CATEGORY_SELECTION",
     ROUND_START: "ROUND_START",
-    WORD_SELECTION: "WORD_SELECTION",
+    ANSWERING: "ANSWERING",
     VOTING: "VOTING",
-    ROUND_END: "ROUND_END",
+    RESULTS: "RESULTS",
     GAME_END: "GAME_END"
 } as const;

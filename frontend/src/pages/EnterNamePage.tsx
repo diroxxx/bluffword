@@ -45,6 +45,7 @@ function EnterNamePage() {
         console.log({ mode, code, nickname });
 
         if (mode === "CREATE") {
+            console.log("Creating room with settings:", gameSettings);
             postCreateRoom(nickname, gameSettings).then((data) => {
             setUser(data);
 
@@ -253,7 +254,7 @@ function EnterNamePage() {
                                         setGameSettings(prev => ({
                                             ...prev,
                                             categorySelectionMode: e.target.value as CategorySelectionMode,
-                                            staticCategory: undefined, // reset staticCategory on change
+                                            staticCategory: undefined,
                                         }))
                                     }
                                     className="w-full px-4 py-2 rounded-lg bg-deep-space-blue/50 border border-steel-blue/30 text-papaya-whip/90"

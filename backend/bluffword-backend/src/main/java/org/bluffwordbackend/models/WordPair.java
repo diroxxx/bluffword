@@ -33,4 +33,7 @@ public class WordPair {
     @ToString.Exclude
     private WordCategory category;
 
+    public WordPair() {
+
+    }
 }

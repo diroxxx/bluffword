@@ -4,31 +4,45 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
 public class RoundTimerService {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
+
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public void startRoundTimer(String roomCode, int roundNumber, int seconds, Long playerId) {
-        long startTime = System.currentTimeMillis();
-        long endTime = startTime + (seconds * 1000L);
+    private final Map<String, ScheduledFuture<?>> runningTimers = new ConcurrentHashMap<>();
+
+    public void startRoundTimer(String roomCode, int seconds) {
+        cancelTimer(roomCode);
+
+        final long endNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(seconds);
+
+        simpMessagingTemplate.convertAndSend("/topic/round/" + roomCode + "/time", (long) seconds);
 
         ScheduledFuture<?> task = scheduler.scheduleAtFixedRate(() -> {
-            long remainingTime = (endTime - System.currentTimeMillis()) / 1000L;
+            long remainingNanos = endNanos - System.nanoTime();
+            long remainingSeconds = Math.max(0, TimeUnit.NANOSECONDS.toSeconds(remainingNanos));
 
-            if (remainingTime <= 0) {
-                simpMessagingTemplate.convertAndSend("/topic/round/" + roomCode + "/" + roundNumber + "/player/" + playerId + "/time", remainingTime);
-            } else {
-                simpMessagingTemplate.convertAndSend("/topic/round/" + roomCode + "/" + roundNumber + "/player/" + playerId + "/time", remainingTime);
+            simpMessagingTemplate.convertAndSend("/topic/round/" + roomCode + "/time", remainingSeconds);
+
+            if (remainingSeconds <= 0) {
+                cancelTimer(roomCode);
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, 1, 1, TimeUnit.SECONDS);
+
+        runningTimers.put(roomCode, task);
+    }
+
+    public void cancelTimer(String roomCode) {
+        ScheduledFuture<?> existing = runningTimers.remove(roomCode);
+        if (existing != null) {
+            existing.cancel(false);
+        }
     }
 
 }

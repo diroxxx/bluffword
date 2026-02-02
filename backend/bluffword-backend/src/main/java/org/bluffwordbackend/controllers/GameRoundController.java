@@ -2,13 +2,19 @@ package org.bluffwordbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.bluffwordbackend.services.GameRoomService;
-import org.bluffwordbackend.services.RoundTimerService;
-import org.bluffwordbackend.services.WordPairService;
+import org.bluffwordbackend.dtos.PlayerWordResponse;
+import org.bluffwordbackend.models.CategorySelectionMode;
+import org.bluffwordbackend.models.GameRoom;
+import org.bluffwordbackend.models.Player;
+import org.bluffwordbackend.models.WordPairDto;
+import org.bluffwordbackend.services.*;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -19,6 +25,9 @@ public class GameRoundController {
     private final WordPairService wordPairService;
     private final GameRoomService gameRoomService;
     private final RoundTimerService roundTimerService;
+    private final RoundService roundService;
+    private final PlayerService playerService;
+    private final GameRoundBroadcaster gameRoundBroadcaster;
 
 
     @MessageMapping("/room/{roomCode}/round/player/{playerId}/start")
@@ -27,15 +36,11 @@ public class GameRoundController {
     }
 
 
+
+
     @MessageMapping("/room/{roomCode}/round/player/{playerId}/word")
-    public void sendRoundWords(@DestinationVariable String roomCode, @DestinationVariable Long playerId) {
-
+    public void nextRound(@DestinationVariable String roomCode, @DestinationVariable Long playerId) {
+        roundService.startOrSendRoundWords(roomCode, playerId);
     }
-
-
-
-
-
-
 
 }

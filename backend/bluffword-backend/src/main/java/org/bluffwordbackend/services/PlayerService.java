@@ -7,6 +7,7 @@ import org.bluffwordbackend.repositories.PlayerRepository;
 import org.springframework.stereotype.Service;
 
 import java.beans.Transient;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -14,6 +15,12 @@ import java.util.Optional;
 public class PlayerService {
 
     private final PlayerRepository playerRepository;
+
+
+    public List<Player> findAllPlayers() {
+        return playerRepository.findAll();
+    }
+
 
     @Transactional
     public Player createPlayer(String nickname) {

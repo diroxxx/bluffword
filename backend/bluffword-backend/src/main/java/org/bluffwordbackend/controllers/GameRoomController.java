@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bluffwordbackend.dtos.GameRoomSettingsDto;
 import org.bluffwordbackend.dtos.JoinGameRoomRequestDto;
+import org.bluffwordbackend.models.GameRoomState;
 import org.bluffwordbackend.records.CreateRoomRequestDto;
 import org.bluffwordbackend.redisDtos.PlayerDto;
 import org.bluffwordbackend.services.GameRoomBroadcaster;
@@ -48,6 +49,7 @@ public class GameRoomController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createRoom(@RequestBody CreateRoomRequestDto request) {
+        System.out.println(request);
         String nickname = request.nickname();
         GameRoomSettingsDto gameRoomSettingsDto = request.settings();
 
@@ -64,6 +66,7 @@ public class GameRoomController {
         }
 
         List<PlayerDto> playerDtos = gameRoomService.getListOfPlayers(playerDto.getRoomCode());
+
         gameRoomBroadcaster.broadcastPlayers(playerDto.getRoomCode(), playerDtos);
 
         return ResponseEntity.ok(playerDto);
@@ -73,6 +76,7 @@ public class GameRoomController {
     public ResponseEntity<?> join(@RequestBody JoinGameRoomRequestDto request) {
         PlayerDto playerDto = gameRoomService.joinRoom(request.nickname(), request.roomCode());
         List<PlayerDto> playerDtos = gameRoomService.getListOfPlayers(playerDto.getRoomCode());
+
         gameRoomBroadcaster.broadcastPlayers(playerDto.getRoomCode(), playerDtos);
 
         return ResponseEntity.ok(playerDto);
@@ -88,7 +92,7 @@ public class GameRoomController {
 
 
     @MessageMapping("/room/{roomCode}/state")
-    public void getRoomState(@DestinationVariable String roomCode) {
+    public void getRoomState(@DestinationVariable String roomCode, GameRoomState gameRoomState) {
 
         gameRoomService.getRoomState(roomCode);
         gameRoomBroadcaster.broadcastGameRoomState(roomCode, gameRoomService.getRoomState(roomCode));

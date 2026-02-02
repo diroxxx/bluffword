@@ -11,7 +11,7 @@ public record GameRoomSettingsDto(
         int minPlayers,
         int timeLimitAnswer,
         int timeLimitVote,
-        GameMode mode,
+        GameMode gameMode,
         GameRoomState gameRoomState,
 
         CategorySelectionMode categorySelectionMode,

@@ -33,15 +33,11 @@ public class GameRoomService {
         if (player != null) {
 
             WordCategory wordCategory = null;
-
             if (settingsDto.staticCategory() != null) {
                 wordCategory = wordCategoryRepository.findByName(settingsDto.staticCategory()).orElse(null);
             }
-            Set<Player> players = new HashSet<>();
-            players.add(player);
 
-            GameRoom gameRoomCopy = new GameRoom();
-            gameRoomCopy.builder()
+            GameRoom gameRoomCopy = GameRoom.builder()
                     .code(generateRoomCode())
                     .roundTotal(settingsDto.roundTotal())
                     .currentRound(0)
@@ -49,14 +45,13 @@ public class GameRoomService {
                     .minPlayers(settingsDto.minPlayers())
                     .timeLimitAnswer(settingsDto.timeLimitAnswer())
                     .timeLimitVote(settingsDto.timeLimitVote())
-                    .state(settingsDto.gameRoomState())
-                    .gameMode(settingsDto.mode())
+                    .state(GameRoomState.LOBBY)
+                    .gameMode(settingsDto.gameMode())
                     .categorySelectionMode(settingsDto.categorySelectionMode())
                     .staticCategory(wordCategory)
-                    .players(null)
+                    .players(new HashSet<>())
                     .host(player)
                     .build();
-
 
             RoomPlayer roomPlayer = new RoomPlayer();
             roomPlayer.setPlayer(player);
@@ -177,6 +172,11 @@ public class GameRoomService {
             );
         }
         return null;
+    }
+
+
+    public GameRoom getGameRoomByCode(String roomCode) {
+        return gameRoomRepository.findGameRoomByCode(roomCode).orElse(null);
     }
 
 

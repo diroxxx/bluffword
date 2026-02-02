@@ -1,5 +1,6 @@
 import { createStompChannelHook } from "../../lib/CustomStomp";
 import type { PlayerInfo } from "../../types/PlayerInfo";
+import type { PlayerWordResponse } from "../types/playerWordResponse";
 
 export const useNextWord = (roomCode?: string, playerId?: number, ) => {
 
@@ -8,9 +9,10 @@ if (!roomCode) {
   }
 
 
-      return createStompChannelHook<PlayerInfo[], {}>(  {
+      return createStompChannelHook<PlayerWordResponse, {}>(  {
         url: "ws://localhost:8080/ws",
-        subscribeDestination: `/topic/room/${roomCode}/round/player/${playerId}/word`,
+        subscribeDestination: `/topic/room/${roomCode}/player/${playerId}/round/word`,
+
         sendDestination: `/app/room/${roomCode}/round/player/${playerId}/word`,
       })();
 }
