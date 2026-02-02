@@ -6,7 +6,7 @@ import { use, useEffect, useState } from "react";
 import { gameRoomAtom } from "../atoms/gameRoomAtom";
 import type { GameSettings } from "../LobbyContainer/types/GameSettings";
 import { getGameSettings } from "../LobbyContainer/api/getGameSettings";
-import { useGameStateSocket } from "../shared/useGameStateSocket";
+import { useGameStateSetSocket } from "../shared/useGameStateSocket";
 import { GameRoomState } from "../LobbyContainer/types/gameRoomState";
 import { useNextWord } from "../round/hooks/useNextWord";
 
@@ -14,18 +14,15 @@ function LobbyPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const { code } = location.state || {};
-    console.log("LobbyPage loaded with room code:", code);
     const [player, setPlayer] = useAtom(playerInfoAtom);
     const [gameRoom, setGameRoom] = useAtom(gameRoomAtom);
     const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
 
     const { connected, messages: playersResult, send: sendPlayersLists } = useListOfPlayers(player?.roomCode);
     
-    const { connected: stateConnected, messages: stateResult, send: sendState } = useGameStateSocket(player?.roomCode);
+    const { connected: stateConnected, messages: stateResult, send: sendState } = useGameStateSetSocket(player?.roomCode);
 
-
-    const userInfo = useAtomValue(playerInfoAtom);  
-    const { connected: nextWordConnected, messages: word, send } = useNextWord(userInfo?.roomCode, userInfo?.id);
+    const { connected: nextWordConnected, messages: word, send: sendToWord } = useNextWord(player?.roomCode, player?.id);
     
     function handleDeleteUser() {
 
@@ -46,7 +43,8 @@ function LobbyPage() {
         
         if (stateConnected) {
             try {
-                send({});
+                sendToWord({});
+                sendState(GameRoomState.ANSWERING);
                 navigate("/round", { state: { roomCode: player?.roomCode } });
                 console.log("Start game request sent successfully");
             } catch (error) {

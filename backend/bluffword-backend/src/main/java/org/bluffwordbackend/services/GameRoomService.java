@@ -215,4 +215,15 @@ public class GameRoomService {
         return gameRoomByCode.map(GameRoom::getState).orElse(null);
     }
 
+
+
+    public void updateGameRoomState(String roomCode, GameRoomState state) {
+        Optional<GameRoom> gameRoomByCode = gameRoomRepository.findGameRoomByCode(roomCode);
+        if (gameRoomByCode.isPresent()) {
+            gameRoomByCode.get().setState(state);
+            gameRoomRepository.save(gameRoomByCode.get());
+        }
+    }
+
+
 }
