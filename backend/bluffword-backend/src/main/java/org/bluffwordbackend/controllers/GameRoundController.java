@@ -29,18 +29,22 @@ public class GameRoundController {
     private final PlayerService playerService;
     private final GameRoundBroadcaster gameRoundBroadcaster;
 
-
-    @MessageMapping("/room/{roomCode}/round/player/{playerId}/start")
-    public void startRound(@DestinationVariable String roomCode, @DestinationVariable Long playerId) {
-
-    }
-
-
-
-
     @MessageMapping("/room/{roomCode}/round/player/{playerId}/word")
-    public void nextRound(@DestinationVariable String roomCode, @DestinationVariable Long playerId) {
+    public void startRound(@DestinationVariable String roomCode, @DestinationVariable Long playerId) {
         roundService.startOrSendRoundWords(roomCode, playerId);
     }
+
+
+    @MessageMapping("/room/{roomCode}/round/{roundNumber}/categorySelection")
+    public void categorySelection() {
+
+    }
+
+    @MessageMapping("/room/{roomCode}/round/{roundNumber}/answer")
+    public void answering(@DestinationVariable String roomCode, @DestinationVariable Integer roundNumber, @RequestBody PlayerWordResponse playerWordResponse) {
+
+    }
+
+
 
 }

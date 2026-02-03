@@ -90,18 +90,7 @@ public class GameRoomController {
 
     }
 
-
-    @MessageMapping("/room/{roomCode}/state/set")
-    public void getRoomState(@DestinationVariable String roomCode, @RequestBody GameRoomState gameRoomState) {
-
-        System.out.println("new state:" + gameRoomState);
-        gameRoomService.updateGameRoomState(roomCode, gameRoomState);
-
-        gameRoomBroadcaster.broadcastGameRoomState(roomCode, gameRoomService.getRoomState(roomCode));
-
-    }
-
-    @MessageMapping("/room/{roomCode}/state/get")
+    @MessageMapping("/room/{roomCode}/state")
     public void getRoomState(@DestinationVariable String roomCode) {
         gameRoomBroadcaster.broadcastGameRoomState(roomCode, gameRoomService.getRoomState(roomCode));
     }

@@ -14,5 +14,9 @@ public class GameRoundBroadcaster {
         messagingTemplate.convertAndSend("/topic/room/" + roomCode + "/player/" + playerId +"/round/word", word);
     }
 
+    public void broadcastCurrentNumberOfRound(String roomCode, int roundNumber) {
+        messagingTemplate.convertAndSend("/topic/room/" + roomCode +"/round/", roundNumber);
+    }
+
 
 }

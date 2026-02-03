@@ -19,7 +19,7 @@ public class Round {
     private int roundNumber;
     private String category;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "game_room_id")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -35,7 +35,7 @@ public class Round {
     @EqualsAndHashCode.Exclude
     private Set<Vote> votes = new HashSet<>();
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "word_pair_id")
     private WordPair wordPair;
 
