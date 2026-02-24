@@ -1,8 +1,8 @@
 export type GameSettings = {
-     roomCode: string;
+     code: string;
      roundTotal: number;
      maxPlayers: number;   
-     minPlayers: number;
+     numberOfImpostors: number;
      timeLimitAnswer: number;
      timeLimitVote: number;
      gameMode: GameMode;
@@ -10,7 +10,6 @@ export type GameSettings = {
      staticCategory?: string;
 
 };
-
 
 export const GameMode = {
     STATIC_IMPOSTOR: "STATIC_IMPOSTOR",

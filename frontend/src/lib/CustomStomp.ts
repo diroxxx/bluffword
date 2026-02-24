@@ -63,7 +63,7 @@ export function createStompChannelHook<TReceive, TSend = TReceive>(
         if (!clientRef.current || !connected) return;
         clientRef.current.publish({
           destination: sendDestination,
-          body: JSON.stringify(msg),
+          body: typeof msg === "string" ? msg : JSON.stringify(msg),
         });
       },
       [connected, sendDestination]

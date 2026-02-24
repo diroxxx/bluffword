@@ -14,17 +14,16 @@ function EnterNamePage() {
     const { mode, code } = location.state || {};
     const [nickname, setNickname] = useState<string>("");
     const [maxPlayers, setMaxPlayers] = useState<number>(4);
-    const [minPlayers, setMinPlayers] = useState<number>(3);
     const [roundTotal, setRoundTotal] = useState<number>(5);
     const [timeLimitAnswer, setTimeLimitAnswer] = useState<number>(60);
     const [timeLimitVote, setTimeLimitVote] = useState<number>(30);
     const [gameMode, setGameMode] = useState<GameMode>(GameMode.STATIC_IMPOSTOR);
     const navigate = useNavigate();
     const [gameSettings, setGameSettings] = useState<GameSettings>({
-        roomCode: "",
+        code: "",
         roundTotal: 5,
         maxPlayers: 4,
-        minPlayers: 3,
+        numberOfImpostors: 1,
         timeLimitAnswer: 60,
         timeLimitVote: 30,
         gameMode: GameMode.STATIC_IMPOSTOR,
@@ -45,7 +44,6 @@ function EnterNamePage() {
         console.log({ mode, code, nickname });
 
         if (mode === "CREATE") {
-            console.log("Creating room with settings:", gameSettings);
             postCreateRoom(nickname, gameSettings).then((data) => {
             setUser(data);
 
@@ -124,31 +122,6 @@ function EnterNamePage() {
                                 </div>
                             </div>
 
-                            {/* Min Players */}
-                            <div className="space-y-2">
-                                <label className="text-steel-blue/70 text-xs tracking-wider uppercase text-center block">
-                                    Min Players
-                                </label>
-                                <div className="flex gap-1.5 justify-center flex-wrap">
-                                    {[2, 3, 4, 5, 6].map((num) => (
-                                        <button
-                                            key={num}
-                                            onClick={() => setGameSettings(prev => ({ ...prev, minPlayers: num }))}
-                                            disabled={num > gameSettings.maxPlayers}
-                                            className={`w-10 h-10 rounded-lg text-sm font-medium tracking-wider transition-all duration-300 backdrop-blur-xl ${
-                                                gameSettings.minPlayers === num
-                                                    ? "bg-papaya-whip/20 text-papaya-whip border-2 border-papaya-whip/70"
-                                                    : num > gameSettings.maxPlayers
-                                                    ? "bg-deep-space-blue/10 text-steel-blue/30 border border-steel-blue/20 cursor-not-allowed"
-                                                    : "bg-deep-space-blue/30 text-steel-blue/70 border border-steel-blue/30 hover:border-papaya-whip/50 hover:text-papaya-whip/70"
-                                            }`}
-                                        >
-                                            {num}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
                             {/* Round Total */}
                             <div className="space-y-2">
                                 <label className="text-steel-blue/70 text-xs tracking-wider uppercase text-center block">
@@ -213,6 +186,22 @@ function EnterNamePage() {
                                         </button>
                                     ))}
                                 </div>
+
+                                <div>
+                                <label className="space-y-2 text-steel-blue/70 text-xs tracking-wider uppercase text-center block">
+                                    Number of Impostors
+                                </label>
+                                <div className="flex gap-1.5 justify-center flex-wrap">
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={5}
+                                        value={gameSettings.numberOfImpostors}
+                                        onChange={(e) => setGameSettings(prev => ({ ...prev, numberOfImpostors: parseInt(e.target.value) }))}
+                                        className="text-center w-16 h-10 rounded-lg text-sm font-medium tracking-wider transition-all duration-300 backdrop-blur-xl bg-deep-space-blue/30 text-steel-blue/70 border border-steel-blue/30 hover:border-papaya-whip/50 hover:text-papaya-whip/70"
+                                    />
+                                </div>
+                            </div>
                             </div>
 
                             {/* Game Mode */}
@@ -243,6 +232,7 @@ function EnterNamePage() {
                                     </button>
                                 </div>
                             </div>
+
                             {/* Category Selection Mode */}
                             <div className="space-y-2 md:col-span-2">
                                 <label className="text-steel-blue/70 text-xs tracking-wider uppercase text-center block">

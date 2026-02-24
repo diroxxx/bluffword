@@ -1,0 +1,33 @@
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:file:./dbTest/testdb
+#    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+logging:
+  level:
+    org:
+      springframework:
+        messaging: DEBUG
+        web:
+          socket: DEBUG
+
+
+#  insert into category(name) values('car');
+#  insert into category(name) values('place');
+#
+#  INSERT INTO word_pair_db (real_word, impostor_word, category_id) VALUES ('university', 'highSchool', 2);
+#  INSERT INTO word_pair_db (real_word, impostor_word, category_id) VALUES ('maluch', 'ferrari', 1);

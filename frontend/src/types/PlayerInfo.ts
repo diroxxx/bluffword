@@ -1,5 +1,5 @@
 export type PlayerInfo = {
-    id: number
+    id: string;
     nickname: string;
     isHost: boolean;
     roomCode: string;

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+/*dodaj font Allerta Stencil !!!!!!!!!!!!!!!!!!!!!*/
 @theme {
     --color-molten-lava: #780000ff;
     --color-brick-red: #c1121fff;
@@ -20,3 +20,9 @@
 .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
 .animate-float { animation: float 6s ease-in-out infinite; }
 .delay-1000 { animation-delay: 1s; }
+
+
+
+body {
+    font-family: 'Allerta Stencil', sans-serif;
+}

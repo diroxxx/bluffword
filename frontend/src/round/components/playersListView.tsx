@@ -12,9 +12,9 @@ export  function PlayersList({ players }: { players: PlayerInfo[] }) {
             Waiting for players...
           </div>
         )}
-        {players.map((player) => (
+        {players.map((player, k) => (
           <div
-            key={player.id}
+            key={k}
             className="flex items-center justify-between bg-deep-space-blue/30 border border-steel-blue/20 rounded-lg px-4 py-3"
           >
             <span className="text-papaya-whip/90 tracking-wide text-lg">{player.nickname}</span>

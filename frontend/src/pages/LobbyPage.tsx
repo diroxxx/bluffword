@@ -16,22 +16,31 @@ function LobbyPage() {
     const { code } = location.state || {};
 
 
-    const [player, setPlayer] = useAtom(playerInfoAtom);
 
+
+    const [currentPlayer, setPlayer] = useAtom(playerInfoAtom);
     const [gameRoom, setGameRoom] = useAtom(gameRoomAtom);
+
+
+     if (!currentPlayer?.roomCode) {
+        return <div>Loading...</div>;
+    }
+
     const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
 
-    const { connected, messages: playersResult, send: sendPlayersLists } = useListOfPlayers(player?.roomCode);
+    const { connected, messages: playersResult, send: sendPlayersLists } = useListOfPlayers(currentPlayer?.roomCode);
     
-    const { connected: stateConnected, messages: stateResult, send: sendState } = useGameStateSetSocket(player?.roomCode);
+    const { connected: stateConnected, messages: stateResult, send: sendState } = useGameStateSetSocket(currentPlayer?.roomCode);
 
-    const { connected: nextWordConnected, messages: word, send: startRound } = useStartRound(player?.roomCode, player?.id);
+    const { connected: nextWordConnected, messages: word, send: startRound } = useStartRound(currentPlayer?.roomCode, currentPlayer?.id);
     
     function handleDeleteUser() {
 
      }
 
+
     useEffect(() => {
+
         setGameRoom( prev => ({
             ...prev,
             players: playersResult[0] || [],
@@ -39,50 +48,62 @@ function LobbyPage() {
     }, [playersResult]);
 
     useEffect(() => {
-        if (stateConnected) {
-            setGameRoom((prev) => ({
-                ...prev,
-                state: stateResult[0] || GameRoomState.LOBBY
-            }));
-        }
-    }, [stateConnected, stateResult]);
+        setGameRoom((prev) => ({
+            ...prev,
+            state: stateResult[0] || GameRoomState.LOBBY
+        }));
 
-    useEffect(() => {
         if (stateResult[0] === GameRoomState.ANSWERING) {
-            navigate("/round", { state: { roomCode: player?.roomCode } });
+            navigate("/round", { state: { roomCode: currentPlayer?.roomCode } });
         }
 
     }, [stateResult]);
 
+
     function sendStartGame() { 
-        
-        if (stateConnected) {
+        if (!currentPlayer?.roomCode) {
+            console.error("No room code available to start the game.");
+            return;
+        }
             try {
                 startRound({});
-                navigate("/round", { state: { roomCode: player?.roomCode } });
+                navigate("/round", { state: { roomCode: currentPlayer?.roomCode } });
                 console.log("Start game request sent successfully");
             } catch (error) {
                 console.error("Error sending start game request:", error);
             }
-        }
     }
     
     useEffect(() => {
         sendPlayersLists({});
-    }, [sendPlayersLists]);
+        if ( gameRoom.players.length === 0) {
+            sendPlayersLists({});
+        }
+    }, [currentPlayer?.roomCode, sendPlayersLists]);
+
+    useEffect(() => {
+        if (currentPlayer?.roomCode) {
+            setGameRoom(prev => ({
+                ...prev,
+                roomCode: currentPlayer.roomCode,
+            }));
+        }
+    }, [currentPlayer?.roomCode]);
 
        
     useEffect(() => {
+        if (!currentPlayer?.roomCode) return;
         const fetchSettings = async () => {
             try {
-                const settings = await getGameSettings(player?.roomCode || "");
+                const settings = await  getGameSettings(currentPlayer?.roomCode!!);
                 setGameSettings(settings);
             } catch (error) {
                 console.error("Error fetching game settings:", error);
             }
         };
         fetchSettings();
-    }, [player?.roomCode]);
+
+    }, [currentPlayer?.roomCode]);
 
     return (
         <div className="relative min-h-screen overflow-hidden bg-deep-space-blue">
@@ -97,7 +118,7 @@ function LobbyPage() {
 
                 <div className="text-center space-y-8">
                     <h1 className="text-6xl md:text-8xl font-thin tracking-widest text-papaya-whip/90">
-                        ROOM {player?.roomCode}
+                        ROOM {currentPlayer?.roomCode}
                     </h1>
 
                     <p className="text-steel-blue/70 text-sm md:text-base tracking-widest uppercase">
@@ -137,11 +158,11 @@ function LobbyPage() {
                             </div>
                         </div>
 
-                        {player?.isHost && (
+                        {currentPlayer?.isHost && (
                             <button
                                 className="w-full py-4 bg-papaya-whip/10 hover:bg-papaya-whip/20 text-papaya-whip border border-papaya-whip/30 rounded-xl text-lg font-medium tracking-wider transition-all duration-300 backdrop-blur-xl"
                                 onClick={() => {
-                                  navigate("/round", { state: { roomCode: player?.roomCode } });  
+                                  navigate("/round", { state: { roomCode: currentPlayer?.roomCode } });  
                                 
                                   sendStartGame();
                                 

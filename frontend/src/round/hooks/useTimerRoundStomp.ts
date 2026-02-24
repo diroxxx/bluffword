@@ -1,6 +1,6 @@
 import { createStompChannelHook } from "../../lib/CustomStomp";
 
-export const useTimerRoundStomp = (roomCode?: string, playerId?: number) => {
+export const useTimerRoundStomp = (roomCode?: string, playerId?: string) => {
 
     if (!roomCode) {
         return { connected: false, messages: [], send: () => {} };
