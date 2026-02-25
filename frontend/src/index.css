@@ -6,6 +6,10 @@
     --color-papaya-whip: #fdf0d5ff;
     --color-deep-space-blue: #003049ff;
     --color-steel-blue: #669bbcff;
+
+    /* //different shades */
+    --color-answers: #708d81;
+    --color-answers-dark: #5a746d;
 }
 
 @keyframes pulse-slow {
@@ -25,4 +29,6 @@
 
 body {
     font-family: 'Allerta Stencil', sans-serif;
+        font-synthesis: none; 
+
 }

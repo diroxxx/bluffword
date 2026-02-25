@@ -20,6 +20,9 @@ export function EnterAnswerView() {
 
     const { connected: answersConnected, messages: answers, send: sendAnswers } = useRoundAnswers(player?.roomCode!, gameRoom.currentRound!, player?.id!);
     
+    
+
+
     const [answerObj, setAnswerObj] = useState<string>();
 
     useEffect(() => {
@@ -40,13 +43,13 @@ export function EnterAnswerView() {
 
             <div className="flex items-center justify-between w-full gap-4">
                 <div className="bg-deep-space-blue/95 border-2 border-steel-blue/30 rounded-2xl shadow-xl px-6 py-4 flex-1">
-                    <h2 className="text-2xl font-extrabold text-papaya-whip tracking-widest text-center">ROUND {gameRoom.currentRound}</h2>
+                    <h2 className="text-2xl text-papaya-whip tracking-widest text-center">ROUND {gameRoom.currentRound}</h2>
                 </div>
                 
                 <div className="bg-deep-space-blue/95 border-2 border-brick-red/40 rounded-2xl shadow-xl px-6 py-4">
                     <div className="flex items-center gap-3">
-                        <span className="text-papaya-whip/70 text-sm uppercase tracking-wide font-semibold">Time:</span>
-                        <span className="text-3xl font-extrabold text-papaya-whip bg-brick-red/40 px-4 py-1 rounded-lg border border-brick-red/50">
+                        <span className="text-papaya-whip/70 text-sm uppercase tracking-wide">Time:</span>
+                        <span className="text-3xl text-papaya-whip bg-brick-red/40 px-4 py-1 rounded-lg border border-brick-red/50">
                             {time[0] && time[0] > 0 ? time[0] : "..."}
                         </span>
                     </div>
@@ -58,22 +61,22 @@ export function EnterAnswerView() {
                                 : "bg-teal-600/30 border-teal-500"
                             }`
                         }>
-                            <span className={`text-xl font-bold tracking-wider
+                            <span className={`text-xl tracking-wider
                                 ${word[0]?.isImpostor ? "text-brick-red drop-shadow-lg" : "text-teal-300 drop-shadow-lg"}`
                             }>
-                                {word[0]?.isImpostor ? "You are the IMPOSTOR!" : "You are NOT the impostor"}
+                                {word[0]?.isImpostor ? "IMPOSTOR" : "CIVILIAN"}
                             </span>
                         </div>
 
             <div className="w-full bg-deep-space-blue/95 border-2 border-steel-blue/40 rounded-2xl shadow-xl px-10 py-10 text-center">
-                <span className="block text-papaya-whip/60 text-sm uppercase tracking-widest mb-4 font-semibold">Your word</span>
-                <span className="text-5xl md:text-6xl font-bold text-papaya-whip bg-steel-blue/40 px-10 py-6 rounded-2xl shadow-inner tracking-widest select-all inline-block border border-steel-blue/50">
+                <span className="block text-papaya-whip/60 text-sm uppercase tracking-widest mb-4">Your word</span>
+                <span className="text-5xl md:text-6xl text-papaya-whip bg-steel-blue/40 px-10 py-6 rounded-2xl shadow-inner tracking-widest select-all inline-block border border-steel-blue/50">
                     {word && word.length > 0 ? word[0]?.word : <span className="text-steel-blue/50">Loading...</span>}
                 </span>
             </div>
 
                         <div className="w-full bg-deep-space-blue/95 border-2 border-steel-blue/40 rounded-2xl shadow-xl px-6 py-6">
-                <label className="block text-papaya-whip/60 text-sm uppercase tracking-widest mb-3 font-semibold">Your answer</label>
+                <label className="block text-papaya-whip/60 text-sm uppercase tracking-widest mb-3">Your answer</label>
                 <input 
                     value={answerObj || ""}
                     onChange={(e) => setAnswerObj(e.target.value)}
@@ -91,7 +94,7 @@ export function EnterAnswerView() {
                         sendAnswers(answerObj.trim());
                     }
                 }} 
-                className="w-full bg-green-600 hover:bg-green-700 text-papaya-whip border border-papaya-whip/30 rounded-xl text-lg font-medium tracking-wider transition-all duration-300 px-6 py-4 cursor-pointer backdrop-blur-xl"
+                className="w-full bg-green-600 hover:bg-green-700 text-papaya-whip border border-papaya-whip/30 rounded-xl text-lg tracking-wider transition-all duration-300 px-6 py-4 cursor-pointer backdrop-blur-xl"
             />
         </div>
     );

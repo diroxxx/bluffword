@@ -9,11 +9,12 @@ import org.project.backend_kotlin.redisModels.Player
 import org.project.backend_kotlin.redisModels.WordPair
 import org.project.backend_kotlin.round.dto.PlayerWordResponse
 import org.project.backend_kotlin.round.dto.RoundAnswer
+import org.project.backend_kotlin.round.dto.RoundVoteDto
+import org.project.backend_kotlin.round.dto.VoteDto
 import org.project.backend_kotlin.wordPair.WordPairRepository
 import org.springframework.stereotype.Service
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -84,6 +85,13 @@ class RoundService(
         return gameRoomRedisStore.getSpecificOption(roomCode, "staticCategory") as String
     }
 
+    private fun getListOfRandomIndexForImpostors(numberOfImpostors: Int, players: List<Player>): List<String> {
+
+        roundRedisStore.saveImpostorIds(players[0].roomCode, 1, players.map { it.id })
+
+        return players.indices.shuffled().take(numberOfImpostors).map { players[it].id }.toList()
+    }
+
     fun startRound(roomCode: String) {
         val gameRoomConfig = gameRoomRedisStore.getGameRoomConfig(roomCode)
 
@@ -109,32 +117,32 @@ class RoundService(
 
         val players = gameRoomRedisStore.getPlayersFromRoom(roomCode)
         println("players: $players")
-        val impostorIndex = ThreadLocalRandom.current().nextInt(players.size)
 
-
+        val numberOfImpostors = gameRoomConfig.numberOfImpostors
+        val impostorIds = getListOfRandomIndexForImpostors(numberOfImpostors, players)
+        println("impostorIds: $impostorIds")
 
         roundRedisStore.saveWordPair(roomCode, currentRound, wordPair)
 
         gameRoomRedisStore.updateSpecificOption(roomCode, "state", GameRoomState.ANSWERING)
         gameRoomBroadcaster.broadcastGameRoomState(roomCode, GameRoomState.ANSWERING)
 
-
-        scheduleRoundWordBroadcast(roomCode, wordPair, players, impostorIndex, currentRound)
+        scheduleRoundWordBroadcast(roomCode, wordPair, players, impostorIds, currentRound)
     }
 
     private fun scheduleRoundWordBroadcast(
         roomCode: String,
         wordPair: WordPair,
         players: List<Player>,
-        impostorIndex: Int,
+        impostorIds: List<String>,
         currentRound: Int
     ) {
-        println("scheduleRoundWordBroadcast: $roomCode, $wordPair, $players, $impostorIndex, $currentRound")
+        println("scheduleRoundWordBroadcast: $roomCode, $wordPair, $players, $impostorIds, $currentRound")
 
         sendScheduler.schedule({
             try {
                 println("SCHEDULER EXECUTED - przed broadcastem")
-                broadcastWordsToPlayers(roomCode, wordPair, players, impostorIndex, currentRound)
+                broadcastWordsToPlayers(roomCode, wordPair, players, impostorIds, currentRound)
                 startRoundTimerIfActive(roomCode)
                 println("SCHEDULER EXECUTED - po broadcastie")
             } catch (e: Exception) {
@@ -148,16 +156,16 @@ class RoundService(
         roomCode: String,
         wordPair: WordPair,
         players: List<Player>,
-        impostorIndex: Int,
+        impostorIds: List<String>,
         currentRound: Int
     ) {
         val impostorWord = PlayerWordResponse(wordPair.impostorWord, true, currentRound)
         val realWord = PlayerWordResponse(wordPair.realWord, false, currentRound)
 
-        players.forEachIndexed { index, player ->
+        players.forEach { player ->
             try {
-                println("Wysyłam do gracza: ${player.id}, index: $index")
-                val isImpostor = index == impostorIndex
+                println("Wysyłam do gracza: ${player.id}")
+                val isImpostor = impostorIds.contains(player.id)
                 val response = if (isImpostor) impostorWord else realWord
                 roundBroadcaster.broadcastRoundWord(roomCode, response, player.id)
                 println("Wysłano do gracza: ${player.id}")
@@ -172,21 +180,23 @@ class RoundService(
     private fun startRoundTimerIfActive(roomCode: String) {
         val gameRoom = gameRoomRedisStore.getGameRoomConfig(roomCode)
         if (gameRoom.state == GameRoomState.ANSWERING) {
-            println("startRoundTimerIfActive: $roomCode")
+            println("start timer: $roomCode")
             roundTimer.startRoundTimer(roomCode, gameRoom.timeLimitAnswer)
         }
     }
 
-
     fun saveAnswer(roomCode: String,roundNumber: Int, answer: String, playerId: String) {
 
         val gameRoomConfig = gameRoomRedisStore.getGameRoomConfig(roomCode)
-        println("check1 ${GameRoomState.ANSWERING}")
+        println("state check ${gameRoomConfig.state}")
         if (gameRoomConfig.state != GameRoomState.ANSWERING) return
 
         val currentRoundFromRedis = gameRoomRedisStore.getIntOption(roomCode, "currentRound")
-        println("check2 $roundNumber == $currentRoundFromRedis")
-        if (roundNumber != currentRoundFromRedis) return
+        println("answers check $roundNumber == $currentRoundFromRedis")
+        if (roundNumber != currentRoundFromRedis){
+            println("wrong round number")
+            return
+        }
 
         roundRedisStore.saveAnswer(roomCode, roundNumber,answer, playerId)
 
@@ -194,16 +204,20 @@ class RoundService(
 
     }
 
-
     fun checkIfEveryoneAnswered(roomCode: String, roundNumber: Int) {
 
-
         val checkIfEveryoneAnswered = roundRedisStore.checkIfEveryoneAnswered(roomCode, roundNumber)
-        println("checkIfEveryoneAnswered: $checkIfEveryoneAnswered")
+        println("is everyone answered : $checkIfEveryoneAnswered")
+
         if (checkIfEveryoneAnswered) {
-            //stop the timer
+            println("change state to RESULTS")
+            roundTimer.cancelTimer(roomCode)
 
             gameRoomRedisStore.updateSpecificOption(roomCode, "state", GameRoomState.RESULTS)
+
+            val stateAfterUpdate = gameRoomRedisStore.getSpecificOption(roomCode, "state")
+            println("State verification after update: $stateAfterUpdate")
+
             gameRoomBroadcaster.broadcastGameRoomState(roomCode, GameRoomState.RESULTS)
             roundBroadcaster.broadcastRoundAnswers(roomCode, roundNumber,getRoundAnswers(roomCode,roundNumber))
         }
@@ -213,6 +227,26 @@ class RoundService(
     fun getRoundAnswers(roomCode: String, roundNumber: Int): List<RoundAnswer> {
         return roundRedisStore.getAnswers(roomCode, roundNumber)
     }
+
+    //votes
+
+    fun saveVote(roomCode: String, roundNumber: Int, voteDto: VoteDto) {
+        roundRedisStore.saveVote(roomCode, roundNumber, voteDto)
+        println("Vote saved: $voteDto")
+
+        val votes = roundRedisStore.getVotes(roomCode, roundNumber)
+        println("Current votes count: ${votes.size}")
+        roundBroadcaster.broadcastRoundVotes(roomCode, roundNumber, votes)
+
+    }
+
+    fun getRoundVotes(roomCode: String, roundNumber: Int): List<VoteDto> {
+        val votes = roundRedisStore.getVotes(roomCode, roundNumber)
+        roundBroadcaster.broadcastRoundVotes(roomCode, roundNumber,votes)
+        return votes
+    }
+
+
 
 
 }

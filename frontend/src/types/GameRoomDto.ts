@@ -7,4 +7,5 @@ export type GameRoomDto = {
     currentRound?: number;
     totalRounds?: number;
     state?: GameRoomState;
+    showVotesNicknames?: boolean;
 };

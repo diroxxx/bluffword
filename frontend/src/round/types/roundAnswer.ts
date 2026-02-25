@@ -1,4 +1,4 @@
 export type RoundAnswer = {
     answer: string;
-    nickname: string;
+    playerId: string;
 };

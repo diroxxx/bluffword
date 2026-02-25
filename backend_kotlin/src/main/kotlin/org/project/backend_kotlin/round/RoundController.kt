@@ -1,14 +1,13 @@
 package org.project.backend_kotlin.round
 
 import org.project.backend_kotlin.config.customException.ApiCustomException
-import org.project.backend_kotlin.round.dto.RoundAnswer
+import org.project.backend_kotlin.round.dto.VoteDto
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import kotlin.coroutines.RestrictsSuspension
 
 @RestController
 @RequestMapping("api/round")
@@ -38,7 +37,15 @@ class RoundController(
     }
 
 
+    @MessageMapping("/room/{roomCode}/round/{roundNumber}/player/vote")
+    fun saveVotes(@DestinationVariable roomCode: String, @DestinationVariable roundNumber: Int, @RequestBody voteDto: VoteDto) {
+
+        if (voteDto.targetId.isBlank()) throw ApiCustomException(HttpStatus.BAD_REQUEST, "Target id cannot be empty")
+        if (voteDto.voterId.isBlank()) throw ApiCustomException(HttpStatus.BAD_REQUEST, "Voter id cannot be empty")
+        println("debug-- playerId : ${voteDto.voterId} targetId : ${voteDto.targetId}")
+
+        roundService.saveVote(roomCode, roundNumber, voteDto)
 
 
-
+    }
 }

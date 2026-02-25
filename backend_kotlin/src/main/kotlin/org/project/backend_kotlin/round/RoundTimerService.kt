@@ -6,6 +6,7 @@ import org.project.backend_kotlin.redisModels.GameRoomState
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Component
 import java.util.concurrent.*
+import kotlin.compareTo
 import kotlin.math.max
 
 @Component
@@ -14,7 +15,8 @@ class RoundTimerService(
     private val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1),
     private val runningTimers: MutableMap<String, ScheduledFuture<*>> = ConcurrentHashMap(),
     private val gameRoomRedisStore: GameRoomRedisStore,
-    private val gameRoomBroadcaster: GameRoomBroadcaster
+    private val gameRoomBroadcaster: GameRoomBroadcaster,
+    private val roundRedisStore: RoundRedisStore
 ) {
 
 
@@ -29,16 +31,32 @@ class RoundTimerService(
         var lastSentSeconds = seconds.toLong()
 
         val future = scheduler.scheduleAtFixedRate({
-            val remainingNanos = endNanos - System.nanoTime()
-            val remainingSeconds = max(0, TimeUnit.NANOSECONDS.toSeconds(remainingNanos))
+            try {
+                val currentState = gameRoomRedisStore.getSpecificOption(roomCode, "state") as? GameRoomState
+                val remainingNanos = endNanos - System.nanoTime()
+                val remainingSeconds = max(0, TimeUnit.NANOSECONDS.toSeconds(remainingNanos))
 
-            if (remainingSeconds != lastSentSeconds) {
-                simpMessagingTemplate.convertAndSend("/topic/round/$roomCode/time", remainingSeconds)
-                lastSentSeconds = remainingSeconds
-            }
+                println("Timer loop: state=$currentState, remainingSeconds=$remainingSeconds")
 
-            if (remainingSeconds <= 0) {
-                finishRound(roomCode)
+                if (currentState == GameRoomState.RESULTS) {
+                    println("Timer loop: State is RESULTS, canceling timer")
+                    cancelTimer(roomCode)
+                }
+
+                if (remainingSeconds != lastSentSeconds) {
+                    println("Sending time: $remainingSeconds")
+                    simpMessagingTemplate.convertAndSend("/topic/round/$roomCode/time", remainingSeconds)
+                    lastSentSeconds = remainingSeconds
+                }
+
+                if (remainingSeconds <= 0) {
+                    println("Time is up, calling finishRound")
+                    finishRound(roomCode)
+                    return@scheduleAtFixedRate
+                }
+            } catch (e: Exception) {
+                println("ERROR in timer loop: ${e.message}")
+                e.printStackTrace()
             }
         }, 1, 1, TimeUnit.SECONDS)
 
@@ -47,20 +65,31 @@ class RoundTimerService(
     }
 
     fun cancelTimer(roomCode: String) {
-        val existing: ScheduledFuture<*>? = runningTimers.remove(roomCode)
-        existing?.cancel(false)
+        synchronized(roomCode.intern()) {
+            val future = runningTimers[roomCode]
+            if (future != null && !future.isCancelled) {
+                future.cancel(false)
+                runningTimers.remove(roomCode)
+            }
+        }
     }
 
 
     private fun finishRound(roomCode: String) {
-//        synchronized(roomCode.intern()) {
+        synchronized(roomCode.intern()) {
             val currentState = gameRoomRedisStore.getSpecificOption(roomCode, "state") as GameRoomState
+            println("finishRound called: currentState = $currentState for $roomCode")
 
-            if (currentState == GameRoomState.ANSWERING)
+            if (currentState == GameRoomState.ANSWERING) {
+                println("finishRound: Canceling timer and setting state to RESULTS")
                 cancelTimer(roomCode)
                 gameRoomRedisStore.updateSpecificOption(roomCode, "state", GameRoomState.RESULTS)
                 gameRoomBroadcaster.broadcastGameRoomState(roomCode, GameRoomState.RESULTS)
-//        }
+            } else {
+                cancelTimer(roomCode)
+                println("finishRound: Skipping - state is not ANSWERING but $currentState")
+            }
+        }
     }
 
 }

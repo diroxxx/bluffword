@@ -5,6 +5,7 @@ import org.project.backend_kotlin.redisModels.CategorySelectionMode
 import org.project.backend_kotlin.redisModels.WordPair
 import org.project.backend_kotlin.round.dto.RoundAnswer
 import org.project.backend_kotlin.round.dto.RoundVoteDto
+import org.project.backend_kotlin.round.dto.VoteDto
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
@@ -125,24 +126,26 @@ class RoundRedisStore(
         return "game_room:$roomCode:round:$roundNumber:votes"
     }
 
-    fun getVotes(roomCode: String, roundNumber: Int): List<RoundVoteDto> {
+    fun getVotes(roomCode: String, roundNumber: Int): List<VoteDto> {
         val key = roomRoundVotesKey(roomCode, roundNumber)
         val rawList = redisTemplate.opsForList()
             .range(key, 0, -1) ?: emptyList()
 
         return rawList.mapNotNull {
             when (it) {
-                is String -> objectMapper.readValue(it, RoundVoteDto::class.java)
+                is String -> objectMapper.readValue(it, VoteDto::class.java)
                 else -> null
             }
         }
     }
 
-    fun saveVote(roomCode: String, roundNumber: Int) {
+    fun saveVote(roomCode: String, roundNumber: Int, voteDto: VoteDto) {
         val key = roomRoundVotesKey(roomCode, roundNumber)
+        val json = objectMapper.writeValueAsString(VoteDto(targetId = voteDto.targetId, voterId = voteDto.voterId))
+
 
         redisTemplate.opsForList()
-            .rightPush(key, RoundVoteDto("test", "test"))
+            .rightPush(key, json)
     }
 
 }

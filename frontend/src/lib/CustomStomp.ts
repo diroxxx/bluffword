@@ -60,7 +60,7 @@ export function createStompChannelHook<TReceive, TSend = TReceive>(
 
     const send = useCallback(
       (msg: TSend) => {
-        if (!clientRef.current || !connected) return;
+        if (!clientRef.current || !connected || !clientRef.current.connected) return;
         clientRef.current.publish({
           destination: sendDestination,
           body: typeof msg === "string" ? msg : JSON.stringify(msg),

@@ -24,8 +24,8 @@ function RoundPage() {
         !player ||
         !player.roomCode ||
         !player.id ||
-        !gameRoom ||
-        !gameRoom.currentRound
+        !gameRoom
+        // !gameRoom.currentRound
     ) {
         return null; // lub spinner
     }
@@ -72,18 +72,18 @@ function RoundPage() {
 
 
 return (
-  <div className="flex min-h-screen bg-linear-to-br from-deep-space-blue via-steel-blue to-papaya-whip/10">
-    <div className="w-full md:w-80 lg:w-96 shrink-0 flex items-start justify-center p-6 md:p-8">
+  <div className="flex flex-col md:flex-row min-h-screen bg-linear-to-br from-deep-space-blue via-steel-blue to-papaya-whip/10">
+    <div className="flex md:w-72 lg:w-96 shrink-0 items-start justify-center p-4 md:p-8">
       <div className="w-full max-w-xs">
         <PlayersList players={playersResult.flat()} />
       </div>
     </div>
-    
-    <div className="flex-1 flex items-center p-6 md:p-8">
-      <div className="w-full flex justify-center md:-ml-40 lg:-ml-48">
-        {renderStage()}
-      </div>
+
+    <div className="flex-1 min-w-0 flex items-center justify-center p-4 md:p-8">
+      {renderStage()}
     </div>
+
+    <div className="hidden md:block md:w-72 lg:w-96 shrink-0" />
   </div>
 );
     
