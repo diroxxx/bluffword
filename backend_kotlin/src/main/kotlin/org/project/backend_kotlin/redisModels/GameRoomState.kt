@@ -3,10 +3,9 @@ package org.project.backend_kotlin.redisModels
 enum class GameRoomState {
     LOBBY,
     CATEGORY_SELECTION,
-    GAME_START,
-    ROUND_START,
     ANSWERING,
+    ANSWERING_RESULTS,
     VOTING,
-    RESULTS,
+    VOTING_RESULTS,
     GAME_END
 }

@@ -5,15 +5,19 @@ import { useEffect, useState } from "react";
 import type { RoundAnswer } from "../types/roundAnswer";
 import { useVotes } from "../webSocketsHooks/useVotes";
 import type { VoteDto } from "../types/voteDto";
+import { useTimerRoundStomp } from "../hooks/useTimerRoundStomp";
+import { TimerRing } from "./TimerRing";
 
 export function ResultsView({ roundAnswers }: { roundAnswers: RoundAnswer[] }) {
     const [player] = useAtom(playerInfoAtom);
     const [gameRoom] = useAtom(gameRoomAtom);
 
     const { connected: votesConnected, messages: votesMessage, send: sendVote } = useVotes(player?.roomCode!, gameRoom.currentRound!);
-
+    const { connected: timerConnected, messages: time, send: sendTime } = useTimerRoundStomp(player?.roomCode || "", "VOTING");
+    
     const [allVotes, setAllVotes] = useState<VoteDto[]>([]);
 
+    const [timeLeft, setTimeLeft] = useState<number>(30);
 
 
     useEffect(() => {
@@ -21,12 +25,14 @@ export function ResultsView({ roundAnswers }: { roundAnswers: RoundAnswer[] }) {
         setAllVotes(votesMessage.flat());
     }, [votesMessage]);
 
-    
     useEffect(() => {
         console.log("Round answers received:", roundAnswers);
-
     }, [roundAnswers]);
 
+    useEffect(() => {
+        const latest = time.at(-1);
+        if (latest !== undefined) setTimeLeft(latest);
+    }, [time]);
 
     return (
         <div className="flex flex-col items-center gap-6 max-w-2xl w-full">
@@ -45,6 +51,8 @@ export function ResultsView({ roundAnswers }: { roundAnswers: RoundAnswer[] }) {
                 </div>
             </div>
 
+            <TimerRing timeLeft={timeLeft} />
+
             {/* Answer cards */}
             <div className="w-full grid grid-cols-2 gap-3">
                 {(!roundAnswers || roundAnswers.length === 0) ? (
@@ -61,9 +69,10 @@ export function ResultsView({ roundAnswers }: { roundAnswers: RoundAnswer[] }) {
                                 key={idx}
                                 className={`relative flex flex-col items-center justify-center rounded-2xl p-5 min-h-28 border cursor-pointer transition-all duration-200  hover:shadow-lg
                                     ${isMe
-                                        ? "bg-answers border-answers/40 hover:bg-answers-dark hover:border-answers/60 hover:shadow-answers/20"
-                                        : "bg-deep-space-blue/70 border-steel-blue/10 hover:bg-deep-space-blue/90 hover:border-steel-blue/30 hover:shadow-steel-blue/10"
+                                        ? "bg-answers border-answers/40 hover:bg-answers-dark hover:border-answers/60 hover:shadow-answers/20 cursor-not-allowed pointer-events-none"
+                                        : "bg-deep-space-blue/70 border-steel-blue/10 hover:bg-deep-space-blue/90 hover:border-steel-blue/30 hover:shadow-steel-blue/10 cursor-pointer"
                                     }`}
+                                    // disabled={isMe} // Can't vote for yourself
 
                                     onClick={() => {
 
@@ -78,7 +87,9 @@ export function ResultsView({ roundAnswers }: { roundAnswers: RoundAnswer[] }) {
                             >
                                 {/* You indicator */}
                                 {isMe && (
-                                    <div className="absolute top-3 right-4 w-1.5 h-1.5 rounded-full bg-brick-red/60" />
+                                    <div className="absolute top-3 right-4 px-2 py-1 rounded-full bg-brick-red/60" >
+                                        <span className="text-xs text-papaya-whip">You</span>
+                                    </div>
                                 )}
 
                                 {/* Votes count */}

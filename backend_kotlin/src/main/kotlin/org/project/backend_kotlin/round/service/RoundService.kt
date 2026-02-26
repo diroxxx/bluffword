@@ -1,15 +1,17 @@
-package org.project.backend_kotlin.round
+package org.project.backend_kotlin.round.service
 
 import org.project.backend_kotlin.gameRoom.GameRoomBroadcaster
 import org.project.backend_kotlin.gameRoom.GameRoomRedisStore
 import org.project.backend_kotlin.redisModels.CategorySelectionMode
-import org.project.backend_kotlin.redisModels.GameRoom
 import org.project.backend_kotlin.redisModels.GameRoomState
 import org.project.backend_kotlin.redisModels.Player
 import org.project.backend_kotlin.redisModels.WordPair
+import org.project.backend_kotlin.round.RoundBroadcaster
+import org.project.backend_kotlin.round.RoundRedisStore
+import org.project.backend_kotlin.round.service.RoundTimerService
 import org.project.backend_kotlin.round.dto.PlayerWordResponse
 import org.project.backend_kotlin.round.dto.RoundAnswer
-import org.project.backend_kotlin.round.dto.RoundVoteDto
+import org.project.backend_kotlin.round.dto.TimerType
 import org.project.backend_kotlin.round.dto.VoteDto
 import org.project.backend_kotlin.wordPair.WordPairRepository
 import org.springframework.stereotype.Service
@@ -159,6 +161,7 @@ class RoundService(
         impostorIds: List<String>,
         currentRound: Int
     ) {
+
         val impostorWord = PlayerWordResponse(wordPair.impostorWord, true, currentRound)
         val realWord = PlayerWordResponse(wordPair.realWord, false, currentRound)
 
@@ -179,72 +182,14 @@ class RoundService(
 
     private fun startRoundTimerIfActive(roomCode: String) {
         val gameRoom = gameRoomRedisStore.getGameRoomConfig(roomCode)
-        if (gameRoom.state == GameRoomState.ANSWERING) {
-            println("start timer: $roomCode")
-            roundTimer.startRoundTimer(roomCode, gameRoom.timeLimitAnswer)
+        when (gameRoom.state) {
+            GameRoomState.ANSWERING -> roundTimer.startRoundTimer(roomCode, gameRoom.timeLimitAnswer, TimerType.ANSWERING)
+            GameRoomState.VOTING -> roundTimer.startRoundTimer(roomCode, gameRoom.timeLimitVote, TimerType.VOTING)
+            else -> {}
         }
     }
 
-    fun saveAnswer(roomCode: String,roundNumber: Int, answer: String, playerId: String) {
 
-        val gameRoomConfig = gameRoomRedisStore.getGameRoomConfig(roomCode)
-        println("state check ${gameRoomConfig.state}")
-        if (gameRoomConfig.state != GameRoomState.ANSWERING) return
-
-        val currentRoundFromRedis = gameRoomRedisStore.getIntOption(roomCode, "currentRound")
-        println("answers check $roundNumber == $currentRoundFromRedis")
-        if (roundNumber != currentRoundFromRedis){
-            println("wrong round number")
-            return
-        }
-
-        roundRedisStore.saveAnswer(roomCode, roundNumber,answer, playerId)
-
-        checkIfEveryoneAnswered(roomCode, roundNumber)
-
-    }
-
-    fun checkIfEveryoneAnswered(roomCode: String, roundNumber: Int) {
-
-        val checkIfEveryoneAnswered = roundRedisStore.checkIfEveryoneAnswered(roomCode, roundNumber)
-        println("is everyone answered : $checkIfEveryoneAnswered")
-
-        if (checkIfEveryoneAnswered) {
-            println("change state to RESULTS")
-            roundTimer.cancelTimer(roomCode)
-
-            gameRoomRedisStore.updateSpecificOption(roomCode, "state", GameRoomState.RESULTS)
-
-            val stateAfterUpdate = gameRoomRedisStore.getSpecificOption(roomCode, "state")
-            println("State verification after update: $stateAfterUpdate")
-
-            gameRoomBroadcaster.broadcastGameRoomState(roomCode, GameRoomState.RESULTS)
-            roundBroadcaster.broadcastRoundAnswers(roomCode, roundNumber,getRoundAnswers(roomCode,roundNumber))
-        }
-
-    }
-
-    fun getRoundAnswers(roomCode: String, roundNumber: Int): List<RoundAnswer> {
-        return roundRedisStore.getAnswers(roomCode, roundNumber)
-    }
-
-    //votes
-
-    fun saveVote(roomCode: String, roundNumber: Int, voteDto: VoteDto) {
-        roundRedisStore.saveVote(roomCode, roundNumber, voteDto)
-        println("Vote saved: $voteDto")
-
-        val votes = roundRedisStore.getVotes(roomCode, roundNumber)
-        println("Current votes count: ${votes.size}")
-        roundBroadcaster.broadcastRoundVotes(roomCode, roundNumber, votes)
-
-    }
-
-    fun getRoundVotes(roomCode: String, roundNumber: Int): List<VoteDto> {
-        val votes = roundRedisStore.getVotes(roomCode, roundNumber)
-        roundBroadcaster.broadcastRoundVotes(roomCode, roundNumber,votes)
-        return votes
-    }
 
 
 

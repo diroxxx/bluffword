@@ -16,13 +16,10 @@ export function EnterAnswerView() {
           
     const { connected: wordConnected, messages: word, send: sendWord } = useStartRound(player?.roomCode, player?.id, gameRoom.currentRound);
     
-    const { connected: timerConnected, messages: time, send: sendTime } = useTimerRoundStomp(player?.roomCode, player?.id);
+    const { connected: timerConnected, messages: time, send: sendTime } = useTimerRoundStomp(player?.roomCode || "", "ANSWERING");
 
     const { connected: answersConnected, messages: answers, send: sendAnswers } = useRoundAnswers(player?.roomCode!, gameRoom.currentRound!, player?.id!);
     
-    
-
-
     const [answerObj, setAnswerObj] = useState<string>();
 
     useEffect(() => {

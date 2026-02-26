@@ -3,8 +3,9 @@ export type GameRoomState =
     | "ROUND_START"
     | "CATEGORY_SELECTION"
     | "ANSWERING"
+    | "ANSWERING_RESULTS"
     | "VOTING"
-    | "RESULTS"
+    | "VOTING_RESULTS"
     | "GAME_END";
 
 export const GameRoomState = {
@@ -12,7 +13,8 @@ export const GameRoomState = {
     CATEGORY_SELECTION: "CATEGORY_SELECTION",
     ROUND_START: "ROUND_START",
     ANSWERING: "ANSWERING",
+    ANSWERING_RESULTS: "ANSWERING_RESULTS",
     VOTING: "VOTING",
-    RESULTS: "RESULTS",
+    VOTING_RESULTS: "VOTING_RESULTS",
     GAME_END: "GAME_END"
 } as const;

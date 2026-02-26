@@ -10,6 +10,20 @@
     /* //different shades */
     --color-answers: #708d81;
     --color-answers-dark: #5a746d;
+
+    /* Home page design system */
+    --color-bg-deep: #1c1a2e;
+    --color-bg-mid: #232136;
+    --color-bg-panel: #2a2845;
+    --color-card-deep: #2e2b48;
+    --color-card-mid: #342f52;
+    --color-amber-main: #f0a830;
+    --color-amber-bright: #ffbe55;
+    --color-rose-accent: #e8607a;
+    --color-teal-accent: #5ec4b8;
+    --color-text-soft: #a09ab8;
+    --color-text-dim: #5a5472;
+    --color-text-main: #e8e4f0;
 }
 
 @keyframes pulse-slow {
@@ -20,15 +34,181 @@
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
 }
+@keyframes blob-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%       { transform: translate(20px, -20px) scale(1.05); }
+    66%       { transform: translate(-15px, 15px) scale(0.97); }
+}
+@keyframes q-pop {
+    0%   { opacity: 0; transform: translateY(0) scale(0.6); }
+    20%  { opacity: 0.8; transform: translateY(-10px) scale(1); }
+    60%  { opacity: 0.6; transform: translateY(-16px) scale(1.05); }
+    100% { opacity: 0; transform: translateY(-26px) scale(0.8); }
+}
+@keyframes breathe {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+@keyframes deco-float {
+    0%   { opacity: 0; transform: translateY(10px) rotate(var(--r, -6deg)); }
+    15%  { opacity: 0.55; }
+    50%  { opacity: 0.45; transform: translateY(-6px) rotate(var(--r, -6deg)); }
+    85%  { opacity: 0.55; }
+    100% { opacity: 0; transform: translateY(10px) rotate(var(--r, -6deg)); }
+}
 
 .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
-.animate-float { animation: float 6s ease-in-out infinite; }
-.delay-1000 { animation-delay: 1s; }
+.animate-float      { animation: float 6s ease-in-out infinite; }
+.animate-breathe    { animation: breathe 2s ease-in-out infinite; }
+.delay-1000         { animation-delay: 1s; }
 
+/* ---- Background blobs ---- */
+.blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+    animation: blob-float 8s ease-in-out infinite;
+}
+.blob-1 {
+    width: 500px; height: 400px;
+    background: radial-gradient(circle, rgba(240,168,48,0.3), transparent 70%);
+    top: -150px; left: -100px;
+}
+.blob-2 {
+    width: 400px; height: 350px;
+    background: radial-gradient(circle, rgba(232,96,122,0.2), transparent 70%);
+    bottom: -100px; right: -80px;
+    animation-duration: 10s;
+    animation-direction: reverse;
+}
+.blob-3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(94,196,184,0.15), transparent 70%);
+    top: 50%; right: 10%;
+    animation-duration: 12s;
+    animation-delay: 2s;
+}
 
+/* ---- Dot grid ---- */
+.dot-grid {
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ---- Floating question marks ---- */
+.q-float {
+    position: absolute;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    pointer-events: none;
+    opacity: 0;
+    animation: q-pop 4s ease-in-out infinite;
+}
+.q-float:nth-child(1) { font-size: 1.4rem; top: -18px; left: -10px;  animation-delay: 0s;   animation-duration: 3.5s; color: #f0a830; }
+.q-float:nth-child(2) { font-size: 0.9rem; top: -8px;  right: -14px; animation-delay: 1.2s; animation-duration: 4s;   color: #e8607a; }
+.q-float:nth-child(3) { font-size: 1.1rem; bottom: 0;  left: -18px;  animation-delay: 2.4s; animation-duration: 3.8s; color: #5ec4b8; }
+
+/* ---- Floating deco cards ---- */
+.deco-card {
+    position: fixed;
+    background: #2e2b48;
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 14px;
+    padding: 0.8rem 1.1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.65rem;
+    color: #a09ab8;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    animation: deco-float 6s ease-in-out infinite;
+}
+.deco-card-1 { top: 15%;    left: 5%;  --r: -6deg; animation-delay: 0s; }
+.deco-card-2 { top: 20%;    right: 5%; --r: 5deg;  animation-delay: 2s; }
+.deco-card-3 { bottom: 20%; left: 4%;  --r: 4deg;  animation-delay: 4s; }
+.deco-card .dc-label {
+    color: #5a5472;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+}
+.deco-card .dc-word {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #f0a830;
+}
+
+/* ---- Card buttons / input ---- */
+.btn-create {
+    background: linear-gradient(135deg, #f0a830 0%, #e8883a 100%);
+    color: #1a1206;
+    border: none;
+    box-shadow: 0 4px 20px rgba(240,168,48,0.35);
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+.btn-create:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(240,168,48,0.45);
+}
+.btn-create:active { transform: translateY(0); }
+
+.btn-join {
+    background: #342f52;
+    border: 1.5px solid rgba(255,255,255,0.13);
+    color: #a09ab8;
+    white-space: nowrap;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.btn-join:hover {
+    border-color: #f0a830;
+    color: #f0a830;
+    background: rgba(240,168,48,0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(240,168,48,0.15);
+}
+.btn-join:active { transform: none; }
+
+.input-code {
+    background: #232136;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    color: #e8e4f0;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-align: center;
+    caret-color: #f0a830;
+    outline: none;
+    transition: all 0.2s;
+}
+.input-code::placeholder {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: #5a5472;
+    text-transform: none;
+}
+.input-code:focus {
+    border-color: #f0a830;
+    background: #2a2845;
+    box-shadow: 0 0 0 4px rgba(240,168,48,0.1);
+}
 
 body {
     font-family: 'Allerta Stencil', sans-serif;
-        font-synthesis: none; 
-
+    font-synthesis: none;
 }

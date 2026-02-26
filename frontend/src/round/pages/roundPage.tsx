@@ -35,8 +35,6 @@ function RoundPage() {
 
     const { connected: roundAnswersConnected, messages: roundAnswers, send: sendRoundAnswers } = useRoundAnswers(player?.roomCode, gameRoom.currentRound || 1, player.id);
     
-
-
     useEffect(() => {
         if (stateGetConnected) {
             setGameRoom((prev) => ({
@@ -61,7 +59,7 @@ function RoundPage() {
         <EnterAnswerView/>
       );
       
-    case GameRoomState.RESULTS:
+    case GameRoomState.VOTING:
       return <ResultsView 
         roundAnswers={roundAnswers[0] || []}
       />;

@@ -10,7 +10,7 @@ import java.util.UUID
 
 @Service
 
-class GameRoomService(
+class GameRoomManagementService(
     private val gameRoomRedisStore: GameRoomRedisStore,
     private val gameRoomBroadcaster: GameRoomBroadcaster
 ) {

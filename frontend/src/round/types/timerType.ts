@@ -1,0 +1,1 @@
+export type TimerType = "ANSWERING" | "VOTING" | "CATEGORY_SELECTION";
