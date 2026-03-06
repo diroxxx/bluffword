@@ -1,10 +1,10 @@
 package org.project.backend_kotlin.round.service
 
-import org.project.backend_kotlin.gameRoom.GameRoomBroadcaster
 import org.project.backend_kotlin.gameRoom.GameRoomRedisStore
-import org.project.backend_kotlin.gameRoom.GameStateTransitionService
+import org.project.backend_kotlin.gameRoom.TimerExpiryHandler
 import org.project.backend_kotlin.redisModels.GameRoomState
 import org.project.backend_kotlin.round.dto.TimerType
+import org.springframework.context.annotation.Lazy
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
@@ -20,18 +20,14 @@ class RoundTimerService(
     private val scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(1),
     private val runningTimers: MutableMap<String, ScheduledFuture<*>> = ConcurrentHashMap(),
     private val gameRoomRedisStore: GameRoomRedisStore,
-    private val gameRoomBroadcaster: GameRoomBroadcaster,
-    private val gameStateTransitionService: GameStateTransitionService
+    @Lazy private val timerExpiryHandler: TimerExpiryHandler,
 ) {
 
     fun startRoundTimer(roomCode: String, seconds: Int, timerType: TimerType) {
-
         val endNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(seconds.toLong())
-
         val topic = "/topic/round/$roomCode/${timerType.name}/time"
 
         simpMessagingTemplate.convertAndSend(topic, seconds.toLong())
-
         var lastSentSeconds = seconds.toLong()
 
         val future = scheduler.scheduleAtFixedRate({
@@ -40,20 +36,17 @@ class RoundTimerService(
                 val remainingNanos = endNanos - System.nanoTime()
                 val remainingSeconds = max(0, TimeUnit.NANOSECONDS.toSeconds(remainingNanos))
 
-
                 if (shouldCancelTimer(config.state, timerType)) {
                     cancelTimer(roomCode)
                     return@scheduleAtFixedRate
                 }
 
                 if (remainingSeconds <= 0) {
-                    println("Time is up, calling finishRound")
-                    finishState(roomCode)
+                    finishState(roomCode, timerType)
                     return@scheduleAtFixedRate
                 }
 
                 if (remainingSeconds != lastSentSeconds) {
-                    println("Sending time: $remainingSeconds")
                     simpMessagingTemplate.convertAndSend(topic, remainingSeconds)
                     lastSentSeconds = remainingSeconds
                 }
@@ -65,13 +58,14 @@ class RoundTimerService(
         }, 1, 1, TimeUnit.SECONDS)
 
         runningTimers[roomCode] = future
-
     }
 
     private fun shouldCancelTimer(currentState: GameRoomState, timerType: TimerType): Boolean {
         return when (timerType) {
-            TimerType.ANSWERING -> currentState != GameRoomState.ANSWERING
-            TimerType.VOTING -> currentState != GameRoomState.VOTING
+            TimerType.ANSWERING  -> currentState != GameRoomState.ANSWERING
+            TimerType.VOTING     -> currentState != GameRoomState.VOTING
+            TimerType.NEXT_ROUND -> currentState != GameRoomState.VOTING_RESULTS
+            TimerType.GAME_END   -> currentState != GameRoomState.VOTING_RESULTS
         }
     }
 
@@ -85,26 +79,10 @@ class RoundTimerService(
         }
     }
 
-    private fun finishState(roomCode: String) {
+    private fun finishState(roomCode: String, timerType: TimerType) {
         synchronized(roomCode.intern()) {
-            val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
-
             cancelTimer(roomCode)
-
-//            when (config.state) {
-//                GameRoomState.ANSWERING -> {
-//                    println("finishRound: Canceling timer and setting state to RESULTS")
-//                    gameStateTransitionService.setState(roomCode, GameRoomState.ANSWERING_RESULTS)
-//                }
-//                GameRoomState.VOTING -> {
-//                    println("finishRound: Canceling timer and setting state to RESULTS")
-//                    gameStateTransitionService.setState(roomCode, GameRoomState.VOTING_RESULTS)
-//                }
-//                else -> {
-//                    cancelTimer(roomCode)
-//                }
-//            }
+            timerExpiryHandler.onTimerExpired(roomCode, timerType)
         }
     }
-
 }

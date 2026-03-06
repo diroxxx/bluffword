@@ -6,6 +6,8 @@ import { GameRoomState } from "../../LobbyContainer/types/gameRoomState.ts";
 import { EnterCategoryView } from "../components/enterCategoryView.tsx";
 import { EnterAnswerView } from "../components/EnterAnswerView.tsx";
 import { ResultsView } from "../components/resultsView.tsx";
+import { VotingResultsView } from "../components/VotingResultsView.tsx";
+import { GameEndView } from "../components/GameEndView.tsx";
 import { useGameStateGetSocket } from "../../shared/useGameStateGetSocket.ts";
 import { useListOfPlayers } from "../../hooks/useListOfPlayers.ts";
 import { PlayersList } from "../components/playersListView.tsx";
@@ -39,7 +41,7 @@ function RoundPage() {
         if (stateGetConnected) {
             setGameRoom((prev) => ({
                 ...prev,
-                state: stateGetResult[0] || GameRoomState.ANSWERING
+                state: stateGetResult.at(-1) || GameRoomState.ANSWERING
             }));
         }
     }, [setGameRoom, stateGetConnected, stateGetResult]);
@@ -60,9 +62,16 @@ function RoundPage() {
       );
       
     case GameRoomState.VOTING:
-      return <ResultsView 
+      return <ResultsView
         roundAnswers={roundAnswers[0] || []}
       />;
+
+    case GameRoomState.VOTING_RESULTS:
+      return <VotingResultsView />;
+
+    case GameRoomState.GAME_END:
+      return <GameEndView />;
+
     default:
       return null;
   }

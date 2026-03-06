@@ -1,7 +1,6 @@
 package org.project.backend_kotlin.round
 
 import org.project.backend_kotlin.gameRoom.GameRoomRedisStore
-import org.project.backend_kotlin.redisModels.CategorySelectionMode
 import org.project.backend_kotlin.redisModels.WordPair
 import org.project.backend_kotlin.round.dto.RoundAnswer
 import org.project.backend_kotlin.round.dto.RoundVoteDto
@@ -38,13 +37,15 @@ class RoundRedisStore(
 
 
     fun saveImpostorIds(roomCode: String, roundNumber: Int, impostorIds: List<String>) {
-        redisTemplate.opsForHash<String, List<String>>()
-            .put(roomRoundConfigKey(roomCode, roundNumber), "impostorIds", impostorIds)
+        val json = objectMapper.writeValueAsString(impostorIds)
+        redisTemplate.opsForHash<String, String>()
+            .put(roomRoundConfigKey(roomCode, roundNumber), "impostorIds", json)
     }
 
     fun getImpostorIds(roomCode: String, roundNumber: Int): List<String> {
-        return redisTemplate.opsForHash<String, List<String>>()
-            .get(roomRoundConfigKey(roomCode, roundNumber), "impostorIds") ?: emptyList()
+        val raw = redisTemplate.opsForHash<String, String>()
+            .get(roomRoundConfigKey(roomCode, roundNumber), "impostorIds") ?: return emptyList()
+        return objectMapper.readValue(raw, objectMapper.typeFactory.constructCollectionType(List::class.java, String::class.java))
     }
 
     private fun roomRoundWordPairsKey(roomCode: String, roundNumber: Int): String {
@@ -53,29 +54,32 @@ class RoundRedisStore(
 
     //word pair
     fun saveWordPair(roomCode: String, roundNumber: Int, wordPair: WordPair) {
-        redisTemplate.opsForHash<String, WordPair>()
-            .put(roomRoundWordPairsKey(roomCode, roundNumber), "wordPair", wordPair)
+        val json = objectMapper.writeValueAsString(wordPair)
+        redisTemplate.opsForHash<String, String>()
+            .put(roomRoundWordPairsKey(roomCode, roundNumber), "wordPair", json)
     }
 
     fun getWordPair(roomCode: String, roundNumber: Int): WordPair? {
-        return redisTemplate.opsForHash<String, WordPair>()
-            .get(roomRoundWordPairsKey(roomCode, roundNumber), "wordPair")
+        val raw = redisTemplate.opsForHash<String, String>()
+            .get(roomRoundWordPairsKey(roomCode, roundNumber), "wordPair") ?: return null
+        return objectMapper.readValue(raw, WordPair::class.java)
     }
 
     fun listOfWordPairs(roomCode: String): List<WordPair> {
-
-        val currentRound = gameRoomRedisStore.getSpecificOption(roomCode,"currentRound") as Int
-        val wordPairs = mutableListOf<WordPair>()
-        for (roundNumber in 1..currentRound) {
-            wordPairs.addAll(
-                redisTemplate.opsForHash<String, WordPair>()
-                    .entries(roomRoundWordPairsKey(roomCode, roundNumber)).values.toList()
-            )
-        }
-
-        return wordPairs.ifEmpty { emptyList() }
+        val currentRound = gameRoomRedisStore.getSpecificOption(roomCode, "currentRound") as Int
+        return (1..currentRound).mapNotNull { roundNumber -> getWordPair(roomCode, roundNumber) }
     }
 
+
+    fun saveChooserPlayerId(roomCode: String, roundNumber: Int, playerId: String) {
+        redisTemplate.opsForHash<String, String>()
+            .put(roomRoundConfigKey(roomCode, roundNumber), "chooserPlayerId", playerId)
+    }
+
+    fun getChooserPlayerId(roomCode: String, roundNumber: Int): String? {
+        return redisTemplate.opsForHash<String, String>()
+            .get(roomRoundConfigKey(roomCode, roundNumber), "chooserPlayerId")
+    }
 
     //answers
     private fun roomRoundAnswersKey(roomCode: String, roundNumber: Int): String {

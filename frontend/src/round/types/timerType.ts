@@ -1,1 +1,1 @@
-export type TimerType = "ANSWERING" | "VOTING" | "CATEGORY_SELECTION";
+export type TimerType = "ANSWERING" | "VOTING" | "CATEGORY_SELECTION" | "NEXT_ROUND";
