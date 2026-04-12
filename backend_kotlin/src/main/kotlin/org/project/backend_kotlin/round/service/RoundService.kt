@@ -1,11 +1,13 @@
 package org.project.backend_kotlin.round.service
 
+import jakarta.annotation.PreDestroy
 import org.project.backend_kotlin.gameRoom.GameRoomRedisStore
 import org.project.backend_kotlin.redisModels.Player
 import org.project.backend_kotlin.redisModels.WordPair
 import org.project.backend_kotlin.round.RoundBroadcaster
-import org.project.backend_kotlin.round.RoundRedisStore
+import org.project.backend_kotlin.round.redisService.RoundRedisStore
 import org.project.backend_kotlin.round.dto.PlayerWordResponse
+import org.project.backend_kotlin.round.gameStrategy.GameModeStrategyFactory
 import org.project.backend_kotlin.wordPair.WordPairRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -19,6 +21,7 @@ class RoundService(
     private val gameRoomRedisStore: GameRoomRedisStore,
     private val roundBroadcaster: RoundBroadcaster,
     private val wordPairRepository: WordPairRepository,
+    private val strategyFactory: GameModeStrategyFactory,
     private val sendScheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(),
 ) {
 
@@ -26,7 +29,7 @@ class RoundService(
         val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
         val wordPair = getWordPair(roomCode, category) ?: return
         val players = gameRoomRedisStore.getPlayersFromRoom(roomCode)
-        val impostorIds = assignImpostors(config.numberOfImpostors, players, currentRound, roomCode)
+        val impostorIds = strategyFactory.get(config.gameMode).assignImpostors(roomCode, currentRound, players)
 
         roundRedisStore.saveWordPair(roomCode, currentRound, wordPair)
 
@@ -54,12 +57,6 @@ class RoundService(
         return wordPairDb?.let { WordPair(it.id, it.impostorWord, it.realWord) }
     }
 
-    private fun assignImpostors(numberOfImpostors: Int, players: List<Player>, currentRound: Int, roomCode: String): List<String> {
-        val impostorIds = players.indices.shuffled().take(numberOfImpostors).map { players[it].id }
-        roundRedisStore.saveImpostorIds(roomCode, currentRound, impostorIds)
-        return impostorIds
-    }
-
     private fun broadcastWordsToPlayers(
         roomCode: String,
         wordPair: WordPair,
@@ -79,5 +76,9 @@ class RoundService(
                 e.printStackTrace()
             }
         }
+    }
+    @PreDestroy
+    fun shutdownScheduler() {
+        sendScheduler.shutdownNow()
     }
 }

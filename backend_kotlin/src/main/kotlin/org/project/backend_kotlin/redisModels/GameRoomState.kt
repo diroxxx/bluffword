@@ -4,7 +4,6 @@ enum class GameRoomState {
     LOBBY,
     CATEGORY_SELECTION,
     ANSWERING,
-    ANSWERING_RESULTS,
     VOTING,
     VOTING_RESULTS,
     GAME_END

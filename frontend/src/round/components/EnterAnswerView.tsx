@@ -72,7 +72,7 @@ export function EnterAnswerView() {
                 </span>
             </div>
 
-                        <div className="w-full bg-deep-space-blue/95 border-2 border-steel-blue/40 rounded-2xl shadow-xl px-6 py-6">
+                    <div className="w-full bg-deep-space-blue/95 border-2 border-steel-blue/40 rounded-2xl shadow-xl px-6 py-6">
                 <label className="block text-papaya-whip/60 text-sm uppercase tracking-widest mb-3">Your answer</label>
                 <input 
                     value={answerObj || ""}

@@ -78,16 +78,12 @@ class GameRoomRedisStore(
     }
 
     fun getIntOption(roomCode: String, option: String): Int {
-        val value = getSpecificOption(roomCode, option)
-        return when (value) {
+        return when (val value = getSpecificOption(roomCode, option)) {
             is Int -> value
             is String -> value.toIntOrNull() ?: 0
             else -> 0
         }
     }
-
-
-
 
     // gameRoom player redis section
 
@@ -123,9 +119,6 @@ class GameRoomRedisStore(
                 }
             }
     }
-
-
-
 
     fun playerExists(roomCode: String, playerId: String): Boolean {
         val key = roomPlayersKey(roomCode)

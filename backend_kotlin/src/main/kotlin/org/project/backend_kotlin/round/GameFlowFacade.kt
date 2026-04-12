@@ -5,9 +5,12 @@ import org.project.backend_kotlin.gameRoom.GameStateTransitionService
 import org.project.backend_kotlin.gameRoom.TimerExpiryHandler
 import org.project.backend_kotlin.redisModels.CategorySelectionMode
 import org.project.backend_kotlin.redisModels.GameRoomState
+import org.project.backend_kotlin.round.dto.PlayerWordResponse
 import org.project.backend_kotlin.round.dto.TimerType
 import org.project.backend_kotlin.round.dto.VoteDto
 import org.project.backend_kotlin.round.dto.VotingResultDto
+import org.project.backend_kotlin.round.gameStrategy.GameModeStrategyFactory
+import org.project.backend_kotlin.round.redisService.RoundRedisStore
 import org.project.backend_kotlin.round.service.RoundService
 import org.project.backend_kotlin.round.service.RoundTimerService
 import org.project.backend_kotlin.wordPair.CategoryRepository
@@ -24,11 +27,19 @@ class GameFlowFacade(
     private val gameRoomRedisStore: GameRoomRedisStore,
     private val roundService: RoundService,
     private val categoryRepository: CategoryRepository,
+    private val strategyFactory: GameModeStrategyFactory,
 ) : TimerExpiryHandler {
 
     // ── Round start ──────────────────────────────────────────────────────────
 
-    fun startRound(roomCode: String) {
+    fun startGame(roomCode: String, playerId: String) {
+        val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
+        if (config.state != GameRoomState.LOBBY) return
+        if (config.hostId != playerId) return
+        startRound(roomCode)
+    }
+
+    private fun startRound(roomCode: String) {
         val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
         val currentRound = gameRoomRedisStore.getIntOption(roomCode, "currentRound") + 1
         gameRoomRedisStore.updateSpecificOption(roomCode, "currentRound", currentRound)
@@ -49,13 +60,20 @@ class GameFlowFacade(
                 val chooser = players.randomOrNull() ?: return
                 roundRedisStore.saveChooserPlayerId(roomCode, currentRound, chooser.id)
                 val categories = categoryRepository.findAll().shuffled().take(3).map { it.name }
+                roundRedisStore.saveCategoryChoices(roomCode, currentRound, categories)
                 stateTransition.setState(roomCode, GameRoomState.CATEGORY_SELECTION)
                 roundBroadcaster.broadcastCategoryChoices(roomCode, chooser.id, categories)
-
             }
-
         }
-
+    }
+    fun requestCategoryChoices(roomCode: String, roundNumber: Int, playerId: String) {
+        val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
+        if (config.state != GameRoomState.CATEGORY_SELECTION) return
+        val chooserId = roundRedisStore.getChooserPlayerId(roomCode, roundNumber) ?: return
+        if (chooserId != playerId) return
+        val categories = roundRedisStore.getCategoryChoices(roomCode, roundNumber)
+        if (categories.isEmpty()) return
+        roundBroadcaster.broadcastCategoryChoices(roomCode, playerId, categories)
     }
 
     fun selectCategory(roomCode: String, roundNumber: Int, playerId: String, category: String) {
@@ -79,10 +97,29 @@ class GameFlowFacade(
 
     // ── Answering ────────────────────────────────────────────────────────────
 
+    fun requestWord(roomCode: String, playerId: String) {
+        val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
+        if (config.state != GameRoomState.ANSWERING) return
+        if (!gameRoomRedisStore.playerExists(roomCode, playerId)) return
+
+        val currentRound = gameRoomRedisStore.getIntOption(roomCode, "currentRound")
+        val wordPair = roundRedisStore.getWordPair(roomCode, currentRound) ?: return
+        val impostorIds = roundRedisStore.getImpostorIds(roomCode, currentRound)
+
+        val response = if (impostorIds.contains(playerId)) {
+            PlayerWordResponse(wordPair.impostorWord, true, currentRound)
+        } else {
+            PlayerWordResponse(wordPair.realWord, false, currentRound)
+        }
+        roundBroadcaster.broadcastRoundWord(roomCode, response, playerId)
+    }
+
     fun saveAnswer(roomCode: String, roundNumber: Int, answer: String, playerId: String) {
         val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
         if (config.state != GameRoomState.ANSWERING) return
         if (roundNumber != gameRoomRedisStore.getIntOption(roomCode, "currentRound")) return
+        if (!gameRoomRedisStore.playerExists(roomCode, playerId)) return
+        if (roundRedisStore.hasPlayerAnswered(roomCode, roundNumber, playerId)) return
 
         roundRedisStore.saveAnswer(roomCode, roundNumber, answer, playerId)
 
@@ -99,6 +136,13 @@ class GameFlowFacade(
     // ── Voting ───────────────────────────────────────────────────────────────
 
     fun saveVote(roomCode: String, roundNumber: Int, voteDto: VoteDto) {
+        val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
+        if (config.state != GameRoomState.VOTING) return
+        if (roundNumber != gameRoomRedisStore.getIntOption(roomCode, "currentRound")) return
+        if (!gameRoomRedisStore.playerExists(roomCode, voteDto.voterId)) return
+        if (!gameRoomRedisStore.playerExists(roomCode, voteDto.targetId)) return
+        if (voteDto.voterId == voteDto.targetId) return
+
         val votes = roundRedisStore.getVotes(roomCode, roundNumber)
         if (votes.any { it.voterId == voteDto.voterId }) return
 
@@ -145,10 +189,10 @@ class GameFlowFacade(
     private fun buildVotingResult(roomCode: String, roundNumber: Int): VotingResultDto {
         val votes = roundRedisStore.getVotes(roomCode, roundNumber)
         val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
-        val isLastRound = roundNumber >= config.roundTotal
 
         if (votes.isEmpty()) {
-            return VotingResultDto(nickname = null, voteCount = 0, isImpostor = false, isGameOver = isLastRound)
+            val isGameOver = strategyFactory.get(config.gameMode).isGameOver(roomCode, roundNumber, false)
+            return VotingResultDto(nickname = null, voteCount = 0, isImpostor = false, isGameOver = isGameOver)
         }
 
         val players = gameRoomRedisStore.getPlayersFromRoom(roomCode)
@@ -163,8 +207,7 @@ class GameFlowFacade(
         val voteCount = if (topVotedId != null) votes.count { it.targetId == topVotedId } else 0
         val isImpostor = impostorIds.contains(topVotedId)
 
-        val allImpostorsEliminated = isImpostor && impostorIds.size == 1
-        val isGameOver = isLastRound || allImpostorsEliminated
+        val isGameOver = strategyFactory.get(config.gameMode).isGameOver(roomCode, roundNumber, isImpostor)
 
         return VotingResultDto(
             nickname = player?.nickname,
@@ -175,6 +218,8 @@ class GameFlowFacade(
     }
 
     fun rebroadcastVotingResult(roomCode: String) {
+        val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
+        if (config.state != GameRoomState.VOTING_RESULTS) return
         val currentRound = gameRoomRedisStore.getIntOption(roomCode, "currentRound")
         val result = buildVotingResult(roomCode, currentRound)
         roundBroadcaster.broadcastVotingResult(roomCode, currentRound, result)

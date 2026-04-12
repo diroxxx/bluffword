@@ -6,17 +6,12 @@ import { useAtom } from "jotai";
 import { playerInfoAtom } from "./atoms/playerInfoAtom.ts";
 import RoundPage from "./round/pages/roundPage.tsx";
 
-import {QueryClientProvider, QueryClient} from "@tanstack/react-query";
-
 function App() {
 
   const [user] = useAtom(playerInfoAtom);
-  const queryClient = new QueryClient();
-
-  
+    
   return (
     <>
-      <QueryClientProvider client={queryClient}>
         <Routes>
             <Route path="/" element={<HomePage/>} />
             <Route path="/enter-name" element={<EnterNamePage/>} />
@@ -27,7 +22,6 @@ function App() {
             <Route path="/round" element = {<RoundPage/>} />
             <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
-      </QueryClientProvider>
     </>
   )
 }

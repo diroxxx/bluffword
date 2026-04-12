@@ -1,8 +1,7 @@
-import { atomWithStorage } from "jotai/utils";
+import { atom } from "jotai";
 import type { GameRoomDto } from "../types/GameRoomDto";
 
-export const gameRoomAtom = atomWithStorage<GameRoomDto>("gameRoom", {
+export const gameRoomAtom = atom<GameRoomDto>({
     roomCode: "",
     players: [],
-    
 });

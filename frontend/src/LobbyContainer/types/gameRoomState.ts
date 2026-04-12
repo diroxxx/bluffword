@@ -1,9 +1,7 @@
 export type GameRoomState =
     | "LOBBY"
-    | "ROUND_START"
     | "CATEGORY_SELECTION"
     | "ANSWERING"
-    | "ANSWERING_RESULTS"
     | "VOTING"
     | "VOTING_RESULTS"
     | "GAME_END";
@@ -11,9 +9,7 @@ export type GameRoomState =
 export const GameRoomState = {
     LOBBY: "LOBBY",
     CATEGORY_SELECTION: "CATEGORY_SELECTION",
-    ROUND_START: "ROUND_START",
     ANSWERING: "ANSWERING",
-    ANSWERING_RESULTS: "ANSWERING_RESULTS",
     VOTING: "VOTING",
     VOTING_RESULTS: "VOTING_RESULTS",
     GAME_END: "GAME_END"

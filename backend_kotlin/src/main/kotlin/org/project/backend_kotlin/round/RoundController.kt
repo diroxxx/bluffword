@@ -4,10 +4,14 @@ import org.project.backend_kotlin.config.customException.ApiCustomException
 import org.project.backend_kotlin.round.dto.CategorySelectionDto
 import org.project.backend_kotlin.round.dto.VoteDto
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -16,10 +20,13 @@ class RoundController(
     private val gameFlowFacade: GameFlowFacade,
 ) {
 
-    @MessageMapping("/room/{roomCode}/round/player/{playerId}/word")
-    fun startRound(@DestinationVariable roomCode: String) {
-        if (roomCode.isBlank()) throw ApiCustomException(HttpStatus.BAD_REQUEST, "Room code cannot be empty")
-        gameFlowFacade.startRound(roomCode)
+    @PostMapping("/room/{roomCode}/start")
+    fun startGame(
+        @PathVariable roomCode: String,
+        @RequestParam playerId: String,
+    ): ResponseEntity<Void> {
+        gameFlowFacade.startGame(roomCode, playerId)
+        return ResponseEntity.ok().build()
     }
 
     @MessageMapping("/room/{roomCode}/round/{roundNumber}/player/{playerId}/answers")
@@ -43,6 +50,15 @@ class RoundController(
         gameFlowFacade.saveVote(roomCode, roundNumber, voteDto)
     }
 
+    @MessageMapping("/room/{roomCode}/round/{roundNumber}/player/{playerId}/category/request")
+    fun requestCategoryChoices(
+        @DestinationVariable roomCode: String,
+        @DestinationVariable roundNumber: Int,
+        @DestinationVariable playerId: String,
+    ) {
+        gameFlowFacade.requestCategoryChoices(roomCode, roundNumber, playerId)
+    }
+
     @MessageMapping("/room/{roomCode}/round/{roundNumber}/player/{playerId}/category")
     fun selectCategory(
         @DestinationVariable roomCode: String,
@@ -52,6 +68,14 @@ class RoundController(
     ) {
         if (dto.category.isBlank()) throw ApiCustomException(HttpStatus.BAD_REQUEST, "Category cannot be empty")
         gameFlowFacade.selectCategory(roomCode, roundNumber, playerId, dto.category)
+    }
+
+    @MessageMapping("/room/{roomCode}/round/player/{playerId}/word")
+    fun requestWord(
+        @DestinationVariable roomCode: String,
+        @DestinationVariable playerId: String,
+    ) {
+        gameFlowFacade.requestWord(roomCode, playerId)
     }
 
     @MessageMapping("/room/{roomCode}/round/{roundNumber}/voting-results")
