@@ -20,13 +20,14 @@ class StaticImpostorStrategy(
     It is not possible to change impostors after the first round.
      */
     override fun assignImpostors(roomCode: String, currentRound: Int, players: List<Player>): List<String> {
-        if (currentRound == 1) {
+        val ids = if (currentRound == 1) {
             val numberOfImpostors = gameRoomRedisStore.getIntOption(roomCode, "numberOfImpostors")
-            val ids = players.shuffled().take(numberOfImpostors).map { it.id }
-            roundRedisStore.saveImpostorIds(roomCode, 1, ids)
-            return ids
+            players.shuffled().take(numberOfImpostors).map { it.id }
+        } else {
+            roundRedisStore.getImpostorIds(roomCode, 1)
         }
-        return roundRedisStore.getImpostorIds(roomCode, 1)
+        roundRedisStore.saveImpostorIds(roomCode, currentRound, ids)
+        return ids
     }
 
     /*

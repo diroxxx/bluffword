@@ -27,7 +27,10 @@ class RoundService(
 
     fun scheduleWordBroadcast(roomCode: String, currentRound: Int, category: String, onDone: () -> Unit) {
         val config = gameRoomRedisStore.getGameRoomConfig(roomCode)
-        val wordPair = getWordPair(roomCode, category) ?: return
+        val wordPair = getWordPair(roomCode, category) ?: run {
+            println("ERROR: No word pair found for category='$category' in room=$roomCode")
+            return
+        }
         val players = gameRoomRedisStore.getPlayersFromRoom(roomCode)
         val impostorIds = strategyFactory.get(config.gameMode).assignImpostors(roomCode, currentRound, players)
 

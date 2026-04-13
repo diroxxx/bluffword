@@ -47,7 +47,8 @@ class GameRoomRedisStore(
             "hostId" to hostId,
             "state" to GameRoomState.LOBBY.name
         )
-        redisTemplate.opsForHash<String, Any>().putAll(roomConfigKey(roomCode), cfg)
+        @Suppress("UNCHECKED_CAST")
+        redisTemplate.opsForHash<String, Any>().putAll(roomConfigKey(roomCode), cfg.filterValues { it != null } as Map<String, Any>)
 
     }
 
