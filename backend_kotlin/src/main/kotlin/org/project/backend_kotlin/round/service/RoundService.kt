@@ -7,10 +7,12 @@ import org.project.backend_kotlin.redisModels.WordPair
 import org.project.backend_kotlin.round.RoundBroadcaster
 import org.project.backend_kotlin.round.redisService.RoundRedisStore
 import org.project.backend_kotlin.round.dto.PlayerWordResponse
+import org.project.backend_kotlin.round.embeddingModel.EmbeddingService
 import org.project.backend_kotlin.round.gameStrategy.GameModeStrategyFactory
 import org.project.backend_kotlin.wordPair.WordPairRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -23,6 +25,7 @@ class RoundService(
     private val wordPairRepository: WordPairRepository,
     private val strategyFactory: GameModeStrategyFactory,
     private val sendScheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(),
+    private val embeddingService: EmbeddingService
 ) {
 
     fun scheduleWordBroadcast(roomCode: String, currentRound: Int, category: String, onDone: () -> Unit) {
@@ -35,6 +38,15 @@ class RoundService(
         val impostorIds = strategyFactory.get(config.gameMode).assignImpostors(roomCode, currentRound, players)
 
         roundRedisStore.saveWordPair(roomCode, currentRound, wordPair)
+
+        CompletableFuture.runAsync {
+            try {
+                val embedding = embeddingService.embed(wordPair.realWord)
+                roundRedisStore.saveWordEmbedding(roomCode, currentRound, embedding)
+            } catch (e: Exception) {
+                println("ERROR computing embedding for round $currentRound: ${e.message}")
+            }
+        }
 
         sendScheduler.schedule({
             try {

@@ -110,6 +110,19 @@ export function ResultsView({ roundAnswers }: { roundAnswers: RoundAnswer[] }) {
                                       </span>
                                     : <span className="text-steel-blue/25 text-sm italic">no answer</span>
                                 }
+
+                                {/* Similarity score */}
+                                {ans.similarityScore != null && (
+                                    <span className={`mt-2 text-xs font-mono tracking-wider px-2 py-0.5 rounded-full
+                                        ${ans.similarityScore > 0.75
+                                            ? "bg-brick-red/40 text-papaya-whip"
+                                            : ans.similarityScore > 0.45
+                                                ? "bg-amber-main/30 text-amber-bright"
+                                                : "bg-teal-accent/20 text-teal-accent"
+                                        }`}>
+                                        {Math.round(ans.similarityScore * 100)}% match
+                                    </span>
+                                )}
                             </div>
                         );
                     })

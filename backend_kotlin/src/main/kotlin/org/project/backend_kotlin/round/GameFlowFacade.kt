@@ -9,6 +9,7 @@ import org.project.backend_kotlin.round.dto.PlayerWordResponse
 import org.project.backend_kotlin.round.dto.TimerType
 import org.project.backend_kotlin.round.dto.VoteDto
 import org.project.backend_kotlin.round.dto.VotingResultDto
+import org.project.backend_kotlin.round.embeddingModel.EmbeddingService
 import org.project.backend_kotlin.round.gameStrategy.GameModeStrategyFactory
 import org.project.backend_kotlin.round.redisService.RoundRedisStore
 import org.project.backend_kotlin.round.service.RoundService
@@ -28,6 +29,7 @@ class GameFlowFacade(
     private val roundService: RoundService,
     private val categoryRepository: CategoryRepository,
     private val strategyFactory: GameModeStrategyFactory,
+    private val embeddingService: EmbeddingService,
 ) : TimerExpiryHandler {
 
     // ── Round start ──────────────────────────────────────────────────────────
@@ -121,7 +123,11 @@ class GameFlowFacade(
         if (!gameRoomRedisStore.playerExists(roomCode, playerId)) return
         if (roundRedisStore.hasPlayerAnswered(roomCode, roundNumber, playerId)) return
 
-        roundRedisStore.saveAnswer(roomCode, roundNumber, answer, playerId)
+        val similarityScore = roundRedisStore.getWordEmbedding(roomCode, roundNumber)
+            ?.let { wordEmbedding -> embeddingService.cosineSimilarity(wordEmbedding, embeddingService.embed(answer)) }
+            ?: 0f
+
+        roundRedisStore.saveAnswer(roomCode, roundNumber, answer, playerId, similarityScore)
 
         if (roundRedisStore.checkIfEveryoneAnswered(roomCode, roundNumber)) {
             transitionToVoting(roomCode)

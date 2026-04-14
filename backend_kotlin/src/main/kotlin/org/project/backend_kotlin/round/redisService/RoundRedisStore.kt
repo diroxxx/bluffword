@@ -32,8 +32,6 @@ class RoundRedisStore(
             ?: throw IllegalStateException("Category not found for room: $roomCode, round: $roundNumber")
     }
 
-
-
     fun saveImpostorIds(roomCode: String, roundNumber: Int, impostorIds: List<String>) {
         val json = objectMapper.writeValueAsString(impostorIds)
         redisTemplate.opsForHash<String, String>()
@@ -111,15 +109,10 @@ class RoundRedisStore(
         }
     }
 
-    fun saveAnswer(roomCode: String, roundNumber: Int, answer: String, playerId: String) {
-
+    fun saveAnswer(roomCode: String, roundNumber: Int, answer: String, playerId: String, similarityScore: Float = 0f) {
         val key = roomRoundAnswersKey(roomCode, roundNumber)
-
-        val roundAnswerDto = RoundAnswer(answer, playerId)
-        val json = objectMapper.writeValueAsString(roundAnswerDto)
-
-        redisTemplate.opsForList()
-            .rightPush(key, json)
+        val json = objectMapper.writeValueAsString(RoundAnswer(answer, playerId, similarityScore))
+        redisTemplate.opsForList().rightPush(key, json)
     }
 
     fun hasPlayerAnswered(roomCode: String, roundNumber: Int, playerId: String): Boolean =
@@ -156,6 +149,21 @@ class RoundRedisStore(
 
         redisTemplate.opsForList()
             .rightPush(key, json)
+    }
+
+    // wordEmbedding
+    private fun roomRoundWordEmbedding(roomCode: String, roundNumber: Int): String {
+        return "game_room:$roomCode:round:$roundNumber:wordEmbedding"
+    }
+
+    fun saveWordEmbedding(roomCode: String, roundNumber: Int, embedding: List<Float>) {
+        val json = objectMapper.writeValueAsString(embedding)
+        redisTemplate.opsForValue().set(roomRoundWordEmbedding(roomCode, roundNumber), json)
+    }
+
+    fun getWordEmbedding(roomCode: String, roundNumber: Int): List<Float>? {
+        val raw = redisTemplate.opsForValue().get(roomRoundWordEmbedding(roomCode, roundNumber)) as? String ?: return null
+        return objectMapper.readValue(raw, objectMapper.typeFactory.constructCollectionType(List::class.java, Float::class.java))
     }
 
 }

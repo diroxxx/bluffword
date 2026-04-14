@@ -1,7 +1,7 @@
 package org.project.backend_kotlin.round.dto
 
-class RoundAnswerDto(
+data class RoundAnswerDto(
     val answer: String,
-    val nickname: String
-) {
-}
+    val nickname: String,
+    val similarityScore: Float,
+)

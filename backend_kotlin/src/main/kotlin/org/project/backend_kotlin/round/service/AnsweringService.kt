@@ -5,6 +5,7 @@ import org.project.backend_kotlin.redisModels.GameRoomState
 import org.project.backend_kotlin.round.GameFlowFacade
 import org.project.backend_kotlin.round.redisService.RoundRedisStore
 import org.project.backend_kotlin.round.dto.RoundAnswer
+import org.project.backend_kotlin.round.embeddingModel.EmbeddingService
 import org.springframework.stereotype.Service
 
 @Service
