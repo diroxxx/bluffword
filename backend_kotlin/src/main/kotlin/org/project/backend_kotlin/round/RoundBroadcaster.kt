@@ -40,4 +40,5 @@ class RoundBroadcaster(
     fun broadcastVotingResult(roomCode: String, roundNumber: Int, result: VotingResultDto) {
         messagingTemplate.convertAndSend("/topic/room/$roomCode/round/$roundNumber/result", result)
     }
+
 }

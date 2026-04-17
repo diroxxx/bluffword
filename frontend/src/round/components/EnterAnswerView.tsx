@@ -30,76 +30,94 @@ export function EnterAnswerView() {
         setGameRoom(prev => ({ ...prev, currentRound: word[0].currentRound }));
     }, [word]);
 
+    const isImpostor = word[0]?.isImpostor ?? false;
+
+    const handleSubmit = () => {
+        if (word[0] && answerText.trim()) {
+            sendAnswers(answerText.trim());
+            setSubmitted(true);
+        }
+    };
+
     return (
-        <div className="flex flex-col items-center gap-5 max-w-2xl w-full">
+        <div className="flex flex-col items-center gap-4 max-w-xl w-full">
 
-            <div className="flex items-center justify-between w-full gap-4">
-                <div className="bg-deep-space-blue/95 border-2 border-steel-blue/30 rounded-2xl shadow-xl px-6 py-4 flex-1">
-                    <h2 className="text-2xl text-papaya-whip tracking-widest text-center">ROUND {currentRound}</h2>
+            {/* Header bar: round + role badge + timer */}
+            <div className="w-full flex items-center gap-3">
+                <div className="bg-deep-space-blue border border-steel-blue/30 rounded-xl px-5 py-3 flex items-center gap-3 flex-1">
+                    <span className="text-steel-blue/60 text-xs uppercase tracking-widest">Round</span>
+                    <span className="text-papaya-whip text-2xl tracking-widest">{currentRound}</span>
                 </div>
 
-                <div className="bg-deep-space-blue/95 border-2 border-brick-red/40 rounded-2xl shadow-xl px-6 py-4">
-                    <div className="flex items-center gap-3">
-                        <span className="text-papaya-whip/70 text-sm uppercase tracking-wide">Time:</span>
-                        <span className="text-3xl text-papaya-whip bg-brick-red/40 px-4 py-1 rounded-lg border border-brick-red/50">
-                            {time[0] && time[0] > 0 ? time[0] : "..."}
-                        </span>
-                    </div>
+                <div className={`rounded-xl px-5 py-3 border text-center
+                    ${isImpostor
+                        ? "bg-brick-red/20 border-brick-red/60"
+                        : "bg-teal-600/15 border-teal-500/50"
+                    }`}>
+                    <span className={`text-sm font-bold tracking-[0.2em] uppercase
+                        ${isImpostor ? "text-brick-red" : "text-teal-300"}`}>
+                        {isImpostor ? "Impostor" : "Civilian"}
+                    </span>
+                </div>
+
+                <div className="bg-deep-space-blue border border-brick-red/40 rounded-xl px-5 py-3 flex items-center gap-2">
+                    <span className="text-papaya-whip/50 text-xs uppercase tracking-widest">⏱</span>
+                    <span className={`text-2xl tabular-nums tracking-wider
+                        ${(time[0] ?? 99) <= 10 ? "text-brick-red animate-breathe" : "text-papaya-whip"}`}>
+                        {time[0] && time[0] > 0 ? time[0] : "—"}
+                    </span>
                 </div>
             </div>
 
-            <div className={`w-full rounded-2xl shadow-xl px-8 py-6 text-center border-2
-                ${word[0]?.isImpostor ? "bg-brick-red/30 border-brick-red" : "bg-teal-600/30 border-teal-500"}`}>
-                <span className={`text-xl tracking-wider
-                    ${word[0]?.isImpostor ? "text-brick-red drop-shadow-lg" : "text-teal-300 drop-shadow-lg"}`}>
-                    {word[0]?.isImpostor ? "IMPOSTOR" : "CIVILIAN"}
+            {/* Word reveal */}
+            <div className="w-full bg-deep-space-blue border border-steel-blue/35 rounded-2xl shadow-lg px-8 py-8 text-center">
+                <span className="block text-steel-blue/60 text-xs uppercase tracking-[0.3em] mb-5">Your word</span>
+                <span className={`text-4xl md:text-5xl text-papaya-whip tracking-widest select-all inline-block px-8 py-4 rounded-xl border shadow-inner
+                    ${isImpostor
+                        ? "bg-brick-red/15 border-brick-red/30"
+                        : "bg-steel-blue/25 border-steel-blue/40"
+                    }`}>
+                    {word[0]?.word ?? <span className="text-steel-blue/40 text-2xl">Loading...</span>}
                 </span>
+                {isImpostor && (
+                    <p className="mt-4 text-brick-red/60 text-xs tracking-widest uppercase">
+                        You don't know the real word — bluff your way through!
+                    </p>
+                )}
             </div>
 
-            <div className="w-full bg-deep-space-blue/95 border-2 border-steel-blue/40 rounded-2xl shadow-xl px-10 py-10 text-center">
-                <span className="block text-papaya-whip/60 text-sm uppercase tracking-widest mb-4">Your word</span>
-                <span className="text-5xl md:text-6xl text-papaya-whip bg-steel-blue/40 px-10 py-6 rounded-2xl shadow-inner tracking-widest select-all inline-block border border-steel-blue/50">
-                    {word[0]?.word ?? <span className="text-steel-blue/50">Loading...</span>}
-                </span>
-            </div>
-
+            {/* Answer section */}
             {submitted ? (
-                <div className="w-full bg-deep-space-blue/95 border-2 border-steel-blue/40 rounded-2xl shadow-xl px-6 py-8 text-center">
-                    <span className="block text-papaya-whip/60 text-sm uppercase tracking-widest mb-3">Your answer</span>
-                    <span className="text-xl text-papaya-whip/80 tracking-wider">{answerText}</span>
-                    <div className="mt-6 flex items-center justify-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-steel-blue/60 animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <div className="w-2 h-2 rounded-full bg-steel-blue/60 animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <div className="w-2 h-2 rounded-full bg-steel-blue/60 animate-bounce" style={{ animationDelay: "300ms" }} />
-                        <span className="text-steel-blue/60 text-sm uppercase tracking-widest ml-2">Waiting for others</span>
+                <div className="w-full bg-deep-space-blue border border-steel-blue/30 rounded-2xl px-6 py-7 text-center fade-slide-up">
+                    <span className="block text-steel-blue/60 text-xs uppercase tracking-[0.3em] mb-2">Submitted</span>
+                    <span className="text-xl text-papaya-whip/90 tracking-wide">{answerText}</span>
+                    <div className="mt-5 flex items-center justify-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-steel-blue/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-steel-blue/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-steel-blue/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        <span className="text-steel-blue/50 text-xs uppercase tracking-widest ml-2">Waiting for others</span>
                     </div>
                 </div>
             ) : (
-                <>
-                    <div className="w-full bg-deep-space-blue/95 border-2 border-steel-blue/40 rounded-2xl shadow-xl px-6 py-6">
-                        <label className="block text-papaya-whip/60 text-sm uppercase tracking-widest mb-3">Your answer</label>
-                        <input
-                            value={answerText}
-                            onChange={(e) => setAnswerText(e.target.value)}
-                            type="text"
-                            className="w-full px-6 py-4 rounded-xl bg-steel-blue/30 border-2 border-steel-blue/50 text-papaya-whip text-lg placeholder-papaya-whip/40 focus:outline-none focus:ring-2 focus:ring-papaya-whip focus:border-papaya-whip transition-all duration-300"
-                            placeholder="Type your answer here..."
-                        />
-                    </div>
-
+                <div className="w-full bg-deep-space-blue border border-steel-blue/30 rounded-2xl px-6 py-6 flex flex-col gap-4">
+                    <label className="block text-steel-blue/60 text-xs uppercase tracking-[0.3em]">Your answer</label>
+                    <input
+                        autoFocus
+                        value={answerText}
+                        onChange={(e) => setAnswerText(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                        type="text"
+                        className="w-full px-5 py-3.5 rounded-xl bg-steel-blue/20 border border-steel-blue/40 text-papaya-whip text-lg placeholder-papaya-whip/30 focus:outline-none focus:ring-2 focus:ring-steel-blue/60 focus:border-steel-blue/70 transition-all duration-200"
+                        placeholder="Type your answer..."
+                    />
                     <button
                         disabled={!word[0] || !answerText.trim()}
-                        onClick={() => {
-                            if (answerText.trim()) {
-                                sendAnswers(answerText.trim());
-                                setSubmitted(true);
-                            }
-                        }}
-                        className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-papaya-whip border border-papaya-whip/30 rounded-xl text-lg tracking-wider transition-all duration-300 px-6 py-4"
+                        onClick={handleSubmit}
+                        className="w-full py-3.5 bg-papaya-whip/10 hover:bg-papaya-whip/20 disabled:opacity-30 disabled:cursor-not-allowed text-papaya-whip border border-papaya-whip/35 hover:border-papaya-whip/60 rounded-xl text-base tracking-widest uppercase transition-all duration-200"
                     >
                         Submit
                     </button>
-                </>
+                </div>
             )}
         </div>
     );

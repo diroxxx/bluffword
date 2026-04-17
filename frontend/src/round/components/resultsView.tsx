@@ -56,7 +56,7 @@ export function ResultsView({ roundAnswers }: { roundAnswers: RoundAnswer[] }) {
             {/* Answer cards */}
             <div className="w-full grid grid-cols-2 gap-3">
                 {(!roundAnswers || roundAnswers.length === 0) ? (
-                    <div className="col-span-2 bg-deep-space-blue/80 border border-steel-blue/15 rounded-2xl px-6 py-10 text-center text-papaya-whip/40 tracking-wider text-sm">
+                    <div className="col-span-2 bg-deep-space-blue border border-steel-blue/25 rounded-2xl px-6 py-10 text-center text-papaya-whip/50 tracking-wider text-sm">
                         No answers submitted yet...
                     </div>
                 ) : (
@@ -67,10 +67,10 @@ export function ResultsView({ roundAnswers }: { roundAnswers: RoundAnswer[] }) {
                         return (
                             <div
                                 key={idx}
-                                className={`relative flex flex-col items-center justify-center rounded-2xl p-5 min-h-28 border cursor-pointer transition-all duration-200  hover:shadow-lg
+                                className={`relative flex flex-col items-center justify-center rounded-2xl p-5 min-h-28 border cursor-pointer transition-all duration-200 hover:shadow-lg
                                     ${isMe
-                                        ? "bg-answers border-answers/40 hover:bg-answers-dark hover:border-answers/60 hover:shadow-answers/20 cursor-not-allowed pointer-events-none"
-                                        : "bg-deep-space-blue/70 border-steel-blue/10 hover:bg-deep-space-blue/90 hover:border-steel-blue/30 hover:shadow-steel-blue/10 cursor-pointer"
+                                        ? "bg-answers border-answers/60 hover:bg-answers-dark hover:border-answers/80 hover:shadow-answers/20 cursor-not-allowed pointer-events-none"
+                                        : "bg-deep-space-blue border-steel-blue/30 hover:bg-steel-blue/15 hover:border-steel-blue/60 hover:shadow-steel-blue/15 cursor-pointer"
                                     }`}
                                     // disabled={isMe} // Can't vote for yourself
 

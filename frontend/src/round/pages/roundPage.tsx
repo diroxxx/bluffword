@@ -63,14 +63,17 @@ function RoundPage() {
     };
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-linear-to-br from-deep-space-blue via-steel-blue to-papaya-whip/10">
-            <div className="flex md:w-72 lg:w-96 shrink-0 items-start justify-center p-4 md:p-8">
+        <div className="relative flex flex-col md:flex-row min-h-screen bg-deep-space-blue overflow-hidden">
+            {/* Static background — no animation during gameplay */}
+            <div className="absolute inset-0 pointer-events-none bg-linear-to-br from-molten-lava/8 via-deep-space-blue to-steel-blue/5" />
+
+            <div className="relative flex md:w-72 lg:w-96 shrink-0 items-start justify-center p-4 md:p-8">
                 <div className="w-full max-w-xs">
                     <PlayersList players={playersResult.flat()} />
                 </div>
             </div>
 
-            <div className="flex-1 min-w-0 flex items-center justify-center p-4 md:p-8">
+            <div className="relative flex-1 min-w-0 flex items-center justify-center p-4 md:p-8">
                 {renderStage()}
             </div>
 

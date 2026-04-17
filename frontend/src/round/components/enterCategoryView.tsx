@@ -43,7 +43,7 @@ export function EnterCategoryView() {
                         <button
                             key={category}
                             onClick={() => sendCategory(JSON.stringify({ category }))}
-                            className="w-full py-5 bg-deep-space-blue/70 hover:bg-steel-blue/30 border border-steel-blue/30 hover:border-steel-blue/70 text-papaya-whip text-xl tracking-widest rounded-2xl transition-all duration-200"
+                            className="w-full py-5 bg-deep-space-blue border border-steel-blue/40 hover:bg-steel-blue/20 hover:border-steel-blue/80 text-papaya-whip text-xl tracking-widest rounded-2xl transition-all duration-200 shadow-md"
                         >
                             {category}
                         </button>

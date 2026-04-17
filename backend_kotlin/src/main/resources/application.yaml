@@ -23,7 +23,6 @@ spring:
         model: nomic-embed-text-v2-moe
       base-url: http://localhost:11434
 
-
 logging:
   level:
     org:
